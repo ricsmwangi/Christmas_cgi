@@ -12,7 +12,7 @@ function executeCGI(scriptName, queryString = '', postData = '', isPost = false,
     return new Promise((resolve, reject) => {
         const env = Object.assign({}, process.env, {
             REQUEST_METHOD: isPost ? 'POST' : 'GET',
-            QUERY_STRING: isPost ? '' : queryString
+            QUERY_STRING: queryString  // Keep query string even for POST
         });
 
         if (isPost) {
