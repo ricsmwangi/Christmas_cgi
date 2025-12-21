@@ -44,6 +44,25 @@ void html_footer(void) {
     printf("        </p>\n");
     printf("    </footer>\n");
     printf("    <script>\n");
+    printf("        // Handle form submission with AJAX to prevent page reload\n");
+    printf("        function handleFormSubmit(event, action) {\n");
+    printf("            event.preventDefault();\n");
+    printf("            const formData = new FormData(event.target);\n");
+    printf("            const params = new URLSearchParams(formData);\n");
+    printf("            const url = action + '&' + params.toString();\n");
+    printf("            \n");
+    printf("            fetch(url)\n");
+    printf("                .then(response => response.text())\n");
+    printf("                .then(html => {\n");
+    printf("                    // Replace page content\n");
+    printf("                    document.documentElement.innerHTML = html;\n");
+    printf("                })\n");
+    printf("                .catch(error => {\n");
+    printf("                    console.error('Error:', error);\n");
+    printf("                    alert('Error submitting form');\n");
+    printf("                });\n");
+    printf("        }\n");
+    printf("        \n");
     printf("        // Add some festive JavaScript\n");
     printf("        document.addEventListener('DOMContentLoaded', function() {\n");
     printf("            // Add snow effect or other animations here\n");
@@ -85,7 +104,8 @@ void html_footer(void) {
 
 // Generate a simple form
 void html_form_start(const char *action, const char *method) {
-    printf("<form action='%s' method='%s'>\n", action, method ? method : "GET");
+    printf("<form action='%s' method='%s' onsubmit='handleFormSubmit(event, \"%s\")'>\n", 
+           action, method ? method : "GET", action);
 }
 
 void html_form_end(void) {
