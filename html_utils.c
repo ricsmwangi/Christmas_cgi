@@ -294,30 +294,26 @@ void html_holiday_card(const char *recipient, const char *message, const char *t
 }
 
 void html_countdown_timer(void) {
-    time_t now = time(NULL);
-    struct tm *timeinfo = localtime(&now);
-    struct tm christmas = *timeinfo;
-    christmas.tm_mon = 11;
-    christmas.tm_mday = 25;
-    christmas.tm_hour = 0;
-    christmas.tm_min = 0;
-    christmas.tm_sec = 0;
-    
-    time_t christmas_time = mktime(&christmas);
-    if (christmas_time < now) {
-        christmas.tm_year++;
-        christmas_time = mktime(&christmas);
-    }
-    
-    long diff = (long)difftime(christmas_time, now);
-    long days = diff / (60 * 60 * 24);
-    long hours = (diff % (60 * 60 * 24)) / (60 * 60);
-    long minutes = (diff % (60 * 60)) / 60;
-    long seconds = diff % 60;
-    
     printf("<div class='countdown'>\n");
-    printf("<div style='font-size: 28px; text-align: center; margin: 30px 0; font-weight: bold; color: #ff0000; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px;'>%ld d %ld h %ld m %ld s</div>\n", days, hours, minutes, seconds);
+    printf("<div id='countdown-display' style='font-size: 28px; text-align: center; margin: 30px 0; font-weight: bold; color: #ff0000; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px;'></div>\n");
     printf("</div>\n");
+    printf("<script>\n");
+    printf("function updateCountdown() {\n");
+    printf("    const now = new Date();\n");
+    printf("    const christmas = new Date(now.getFullYear(), 11, 25);\n");
+    printf("    if (now > christmas) christmas.setFullYear(now.getFullYear() + 1);\n");
+    printf("    const diff = christmas - now;\n");
+    printf("    const days = Math.floor(diff / (1000 * 60 * 60 * 24));\n");
+    printf("    const hours = Math.floor((diff %% (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));\n");
+    printf("    const minutes = Math.floor((diff %% (1000 * 60 * 60)) / (1000 * 60));\n");
+    printf("    const seconds = Math.floor((diff %% (1000 * 60)) / 1000);\n");
+    printf("    const display = days + 'd ' + hours + 'h ' + minutes + 'm ' + seconds + 's';\n");
+    printf("    const elem = document.getElementById('countdown-display');\n");
+    printf("    if (elem) elem.textContent = display;\n");
+    printf("}\n");
+    printf("updateCountdown();\n");
+    printf("setInterval(updateCountdown, 1000);\n");
+    printf("</script>\n");
 }
 
 // Generate error pages
