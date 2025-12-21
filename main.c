@@ -209,31 +209,27 @@ void show_card_section() {
 
         printf("<div style='text-align: center; margin: 20px;'>\n");
         printf("<button onclick='copyCard()' style='background: #4ecdc4; color: white; padding: 10px 20px; border-radius: 25px; border: none; cursor: pointer; margin: 5px;'>📋 Copy Card</button>\n");
-        printf("<button onclick='shareCardURL()' style='background: #ffd700; color: #333; padding: 10px 20px; border-radius: 25px; border: none; cursor: pointer; margin: 5px;'>🔗 Share Card Link</button>\n");
         printf("<a href='?action=card' style='background: #ff69b4; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; display: inline-block; margin: 5px;'>Create Another Card</a>\n");
         printf("</div>\n");
         
+        printf("<div style='background: rgba(100, 200, 255, 0.1); padding: 15px; border-radius: 10px; margin-top: 20px; border-left: 4px solid #4ecdc4;'>\n");
+        printf("<p style='margin: 0; color: #333; font-weight: bold;'>💡 How to Send:</p>\n");
+        printf("<p style='margin: 5px 0; color: #555;'>1. Click <strong>Copy Card</strong> to copy the card text</p>\n");
+        printf("<p style='margin: 5px 0; color: #555;'>2. Paste it in WhatsApp, Email, or any message app</p>\n");
+        printf("<p style='margin: 5px 0; color: #555;'>3. Your recipient will see the beautiful formatted card! 🎄</p>\n");
+        printf("</div>\n");
+        
         printf("<script>\n");
-        printf("function shareCardURL() {\n");
-        printf("    const params = new URLSearchParams({\n");
-        printf("        action: 'card',\n");
-        printf("        recipient: '");
-        escape_for_js(recipient);
-        printf("',\n");
-        printf("        message: '");
-        escape_for_js(message);
-        printf("',\n");
-        printf("        theme: '");
-        escape_for_js(theme ? theme : "traditional");
-        printf("'\n");
-        printf("    });\n");
-        printf("    const cardURL = window.location.origin + '/?' + params.toString();\n");
-        printf("    console.log('Share URL:', cardURL);\n");
-        printf("    navigator.clipboard.writeText(cardURL).then(() => {\n");
-        printf("        alert('✅ Link copied!\\n\\nFriends can now see your card!');\n");
-        printf("    }).catch(() => {\n");
-        printf("        prompt('Copy this link:', cardURL);\n");
-        printf("    });\n");
+        printf("function copyCard() {\n");
+        printf("    const cardContent = document.querySelector('.holiday-card');\n");
+        printf("    if (cardContent) {\n");
+        printf("        const text = cardContent.innerText;\n");
+        printf("        navigator.clipboard.writeText(text).then(() => {\n");
+        printf("            alert('✅ Card copied to clipboard!\\n\\nNow paste it to send to your recipient!');\n");
+        printf("        }).catch(() => {\n");
+        printf("            alert('Failed to copy. Try selecting the card manually.');\n");
+        printf("        });\n");
+        printf("    }\n");
         printf("}\n");
         printf("</script>\n");
     }
