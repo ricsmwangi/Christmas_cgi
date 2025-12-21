@@ -91,7 +91,6 @@ void show_main_menu() {
     printf("<p style='margin: 0; color: #ffd700;'>🎄 Built with pure C and CGI - No frameworks required! 🎅</p>\n");
     printf("<p style='margin: 5px 0; font-size: 14px;'>Choose your holiday activity above</p>\n");
     printf("<div style='margin-top: 15px;'>\n");
-    printf("<a href='https://github.com/ricsmwangi/learning-progress' style='background: #ffd700; color: #228b22; padding: 8px 16px; border-radius: 20px; text-decoration: none; font-size: 12px; margin-right: 10px;'>📚 View Source</a>\n");
     printf("<a href='?action=about' style='background: #ff6b6b; color: white; padding: 8px 16px; border-radius: 20px; text-decoration: none; font-size: 12px;'>ℹ️ About</a>\n");
     printf("</div>\n");
     printf("</div>\n");
