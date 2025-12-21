@@ -88,8 +88,8 @@ void show_main_menu() {
 
     // Footer navigation
     printf("<div style='text-align: center; margin-top: 40px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px;'>\n");
-    printf("<p style='margin: 0; color: #ffd700;'>🎄 Built with pure C and CGI - No frameworks required! 🎅</p>\n");
-    printf("<p style='margin: 5px 0; font-size: 14px;'>Choose your holiday activity above</p>\n");
+    printf("<p style='margin: 0; color: #ffd700;'>🎄 Celebrate the holidays! 🎅</p>\n");
+    printf("<p style='margin: 5px 0; font-size: 14px;'>Choose your activity above</p>\n");
     printf("</div>\n");
 }
 
@@ -182,7 +182,9 @@ void show_card_section() {
         html_holiday_card(recipient, message, theme);
 
         printf("<div style='text-align: center; margin: 20px;'>\n");
-        printf("<a href='?action=card' style='background: #ff69b4; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none;'>Create Another Card</a>\n");
+        printf("<button onclick='copyCard()' style='background: #4ecdc4; color: white; padding: 10px 20px; border-radius: 25px; border: none; cursor: pointer; margin: 5px;'>📋 Copy Card</button>\n");
+        printf("<button onclick='shareCard()' style='background: #ffd700; color: #333; padding: 10px 20px; border-radius: 25px; border: none; cursor: pointer; margin: 5px;'>🔗 Share Card</button>\n");
+        printf("<a href='?action=card' style='background: #ff69b4; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; display: inline-block; margin: 5px;'>Create Another Card</a>\n");
         printf("</div>\n");
     }
 
@@ -356,8 +358,8 @@ void show_countdown_section() {
 
     printf("<div style='text-align: center; margin: 30px 0;'>\n");
     printf("<h3>🎄 Merry Christmas!</h3>\n");
-    printf("<p>May your holidays be filled with joy, love, and lots of C programming! 🎅</p>\n");
-    printf("<p>Built with pure C and CGI - no frameworks required!</p>\n");
+    printf("<p>May your holidays be filled with joy, love, and celebration! 🎅</p>\n");
+    printf("<p>Enjoy the festive season! 🎉</p>\n");
     printf("</div>\n");
 
     // Simple Christmas tree
