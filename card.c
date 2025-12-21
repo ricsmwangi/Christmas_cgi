@@ -30,7 +30,7 @@ int main() {
     }
 
     // Form for creating card
-    html_form_start("/cgi-bin/card.cgi", "POST");
+    html_form_start("?action=card", "POST");
 
     printf("<label>Recipient Name:</label>\n");
     html_text_input("recipient", "Who is this card for?", recipient);
