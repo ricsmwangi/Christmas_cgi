@@ -1,0 +1,19 @@
+{
+  "name": "christmas-cgi",
+  "version": "1.0.0",
+  "description": "🎄 Santa's Christmas Mini Market - Pure C CGI Web App",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "make"
+  },
+  "keywords": ["christmas", "cgi", "c"],
+  "author": "ricsmwangi",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

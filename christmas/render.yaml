@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: christmas-cgi
+    env: node
+    buildCommand: npm install && make
+    startCommand: npm start

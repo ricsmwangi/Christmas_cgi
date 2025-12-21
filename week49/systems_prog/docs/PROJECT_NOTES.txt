@@ -1,0 +1,95 @@
+Systems Programming Project - Deep Notes (C)
+Date: 2025-12-04T09:50:43.467Z
+
+1) Project overview
+- Goal: Learn and apply core Linux systems programming primitives by building a small but realistic service composed of: logging, event loop, IPC via Unix domain sockets, and a basic process supervisor. The result is a single binary with modular components that can be evolved into a long-running daemon.
+- Scope: Local-only IPC (AF_UNIX), select-based event loop (portable, simple), minimal logging with levels, child process management with fork/exec and waitpid.
+- Build: Makefile using gcc, C11, warnings enabled. Layout: src/ (code), include/ (headers), build/ (artifacts), docs/ (notes), tests/ (future work).
+
+2) Repository layout and rationale
+- include/log.h: Public logging API, hides formatting and timestamping.
+- src/log.c: Implements log levels, timestamps, variadic printf, stderr output. Keeping logging simple reduces dependencies.
+- include/event_loop.h: Thin abstraction exposing add-fd, run, and stop. Keeps loop usage simple while allowing substitution (e.g., epoll) later.
+- src/event_loop.c: select(2)-based loop over a small, fixed array of file descriptors. We prefer select for simplicity; epoll is an easy upgrade for scale.
+- include/ipc.h: IPC API for server start and client connect over Unix sockets; path identifies the socket on the filesystem.
+- src/ipc.c: Encapsulates socket creation, bind/listen and connect, with error logging. Using SOCK_STREAM provides reliable, ordered bytes.
+- include/supervisor.h: Supervisor API to launch a command array as a child process and track its termination.
+- src/supervisor.c: Uses fork, execvp to spawn, then waitpid to collect exit status; logs exits and signals.
+- src/main.c: Wires components: sets log level, creates a pipe to demonstrate the event loop, starts a Unix socket server, optionally spawns a child if arguments are provided, and runs the event loop.
+- Makefile: Minimal targets (all, clean, test). Tabs are required for recipe lines. CFLAGS include -Wall -Wextra -Wpedantic and -O2 -g.
+
+3) Component deep dive
+A) Logging
+- API: log_set_level(level), log_msg(level, fmt, ...). Levels: DEBUG, INFO, WARN, ERROR.
+- Behavior: Messages below the current level are suppressed. Each message is prefixed with an ISO-like timestamp and level tag then printed to stderr to separate logs from stdout data streams.
+- Implementation notes: Uses time() and localtime() to build a timestamp string, then vfprintf for formatting. Keeping stderr as the sink avoids buffering issues and preserves stdout for data piping.
+- Extensibility: Add file outputs, syslog integration via openlog/syslog, or structured JSON logs. Thread-safety can be improved with a mutex.
+
+B) Event loop
+- Purpose: Drive I/O readiness across multiple fds without blocking any single source. In this scaffold, we read ready fds and write bytes to stdout.
+- Data structures: Fixed array fds[MAXFDS], integer nfds count, stop flag. API exposes evloop_add_fd(fd), evloop_request_stop(), evloop_run().
+- Core call: select(maxfd+1, &readset, NULL, NULL, timeout) with 1s timeout. Timeout enables periodic wake to check stop requests and housekeeping.
+- Read handling: For each ready fd, read() up to 256 bytes and echo to STDOUT. This demonstrates non-blocking multiplexing even when data arrives from different producers.
+- Limitations: select has fd-set size limits and O(n) scanning cost. For high fd counts or performance, swap to epoll(7) on Linux or kqueue on BSD/macOS.
+- Extensibility: Register per-fd callbacks, add write-queue management, handle closed fds, detect EOF, and remove fds dynamically.
+
+C) IPC via Unix domain sockets
+- Motivation: Fast local IPC with filesystem addressing, avoiding network stack overhead and security exposure. Works well for client/server in same host or within a container namespace.
+- Server: ipc_server_start(path) creates AF_UNIX SOCK_STREAM socket, unlinks the path, bind()s, then listen()s with backlog 4 and returns the listening fd.
+- Client: ipc_client_connect(path) creates a client socket and connect()s to path, returning the connected fd.
+- Integration: Main adds the listening fd to the event loop. A production server would accept() connections, then add accepted fds to the loop, not just the listener.
+- Security: Ensure proper socket file permissions. Consider chroot, abstract namespace (Linux @name), and SELinux/AppArmor policies for hardened environments.
+
+D) Process supervisor
+- Goal: Run a child process, log lifecycle, and collect exit status. Useful for worker management or supervising helper tools.
+- Flow: fork(); child: execvp(cmd[0], cmd); parent: waitpid(pid, &status, 0) in a loop, handling EINTR.
+- Outcomes: Logs on normal exit (WIFEXITED) and signal termination (WIFSIGNALED). Current implementation blocks until child exits; for concurrency, use nonblocking waitpid with SIGCHLD handling.
+- Extensibility: Restart policies, exponential backoff, exit code mapping, signal forwarding (SIGTERM for graceful shutdown), and process groups with setpgid.
+
+4) main.c walkthrough
+- Sets log to DEBUG to show all messages.
+- Creates a pipe p[2], writes a demo string into the write end, closes it, and adds the read end to the event loop; this guarantees one readable event.
+- Starts a Unix socket server at /tmp/sysprog.sock and adds its fd to the loop; currently the loop will read() from the listening socket which produces no stream data. A proper approach is accept() then read from connected sockets.
+- If program has arguments, it treats them as a command to supervise (e.g., ./sysprog /bin/echo hi). Then evloop_run() starts multiplexing until evloop_request_stop() is called or program exits.
+
+5) Error handling strategy
+- Return -1 on system-call failures and log errno values. Keep failure paths simple and visible to callers.
+- Use errno-aware logging but avoid strerror() in tight loops unless needed. For user-facing errors, convert errno to human-readable strings.
+- Defensive coding: Check array bounds (MAXFDS), verify fd validity, handle EINTR on syscalls, and gracefully close resources.
+
+6) Performance and scalability
+- select is acceptable for tens to hundreds of fds; beyond that, prefer epoll. Avoid copying large buffers unnecessarily; consider splice or sendfile for zero-copy transfers.
+- Logging to stderr can become a bottleneck; buffer or rate-limit logs under heavy load.
+- For IPC, enable nonblocking sockets (fcntl O_NONBLOCK) and use edge-triggered epoll for throughput.
+
+7) Security and robustness
+- Validate inputs (socket paths, command arrays). Avoid directory traversal and ensure proper permissions on socket files.
+- Drop privileges where appropriate (setuid/setgid), and isolate via namespaces or containers.
+- Handle signals: SIGINT/SIGTERM to request stop, SIGCHLD to reap children, avoid zombie processes.
+
+8) Testing strategy
+- Unit test modules (log formatting, event loop behavior with pipes and timers). Integration tests: start server, connect client, send/receive data.
+- Use a test runner shell script or a simple C test harness under tests/. For IPC, use temporary unique socket paths under /tmp.
+- Add sanitizers: -fsanitize=address,undefined in dev builds to catch memory and UB issues.
+
+9) Roadmap
+- Transition event loop to accept() connections and manage per-client fds with callbacks.
+- Add config parsing (INI or JSON) for runtime parameters (socket path, log level, worker commands).
+- Implement graceful shutdown: signal handling, close sockets, drain buffers, flush logs.
+- Build a CLI client for sending commands over the Unix socket, add a simple request/response framing protocol.
+- Consider daemonization (double-fork, setsid) or systemd unit integration instead.
+
+10) How to run
+- Build: make inside week49/systems_prog; binary: build/sysprog.
+- Demo: ./build/sysprog to see the pipe message echoed by the event loop; ./build/sysprog /bin/echo hi to see child process supervision.
+- Socket: The server creates /tmp/sysprog.sock; client connects with ipc_client_connect("/tmp/sysprog.sock"). Extend main to accept and handle client messages.
+
+11) Next steps for deeper learning
+- Replace select with epoll and implement nonblocking I/O.
+- Add message framing (length-prefix) over the Unix socket and a request handler.
+- Implement signal handling and graceful stop, then add a simple configuration loader.
+- Introduce a lightweight module system to register services to the event loop.
+
+12) References
+- man pages: select(2), epoll(7), socket(2), unix(7), bind(2), listen(2), accept(2), connect(2), fork(2), execve(2), waitpid(2), signal(7), fcntl(2).
+- Robust logging patterns and syslog(3). Consider libuv or libevent as alternative event loop libraries if needed.

@@ -1,0 +1,140 @@
+================================================================================
+          Command-Line Arguments (argc, argv) — Practical Lesson
+                            /home/shinigami/CODE/week48b/
+================================================================================
+
+OVERVIEW
+--------
+This lesson explains how command-line arguments work in C programs and
+shows safe, practical patterns for parsing and using them.
+
+KEY CONCEPTS
+------------
+- `int main(int argc, char *argv[])`: `argc` is the number of arguments
+  (including the program name), and `argv` is an array of NUL-terminated
+  strings, with `argv[argc] == NULL`.
+- `argv[0]` is the program name (or path used to execute it). Arguments
+  start at `argv[1]` and go up to `argv[argc-1]`.
+- Do not assume a minimum number of arguments without checking `argc`.
+
+SIMPLE EXAMPLE: Print all arguments
+----------------------------------
+```c
+#include <stdio.h>
+
+int main(int argc, char *argv[]){
+    for (int i = 0; i < argc; ++i) {
+        printf("argv[%d] = '%s'\n", i, argv[i]);
+    }
+    return 0;
+}
+```
+
+PARSING NUMERIC ARGUMENTS SAFELY
+--------------------------------
+- Use `strtol`/`strtod` rather than `atoi`/`atof` to detect conversion errors.
+- Always check `endptr` and errno when converting.
+
+Example: sum integers from command line
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+
+int main(int argc, char *argv[]) {
+    long sum = 0;
+    for (int i = 1; i < argc; ++i) {
+        char *end;
+        errno = 0;
+        long v = strtol(argv[i], &end, 10);
+        if (errno || *end != '\0') {
+            fprintf(stderr, "invalid number: %s\n", argv[i]);
+            return 1;
+        }
+        sum += v;
+    }
+    printf("sum = %ld\n", sum);
+    return 0;
+}
+```
+
+USING `getopt` FOR OPTIONS
+-------------------------
+- For real CLI tools, prefer `getopt` (or `getopt_long`) to parse flags like
+  `-h` or `-o out.txt`.
+- `getopt` handles combined short flags and missing option-argument errors.
+
+Mini-example using `getopt`:
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+int main(int argc, char *argv[]) {
+    int opt;
+    const char *outfile = NULL;
+
+    while ((opt = getopt(argc, argv, "ho:")) != -1) {
+        switch (opt) {
+        case 'h':
+            printf("usage: %s [-h] [-o out] [files...]\n", argv[0]);
+            return 0;
+        case 'o':
+            outfile = optarg;
+            break;
+        default:
+            fprintf(stderr, "unknown option\n");
+            return 1;
+        }
+    }
+
+    // remaining non-option arguments start at argv[optind]
+    for (int i = optind; i < argc; ++i)
+        printf("arg: %s\n", argv[i]);
+
+    if (outfile)
+        printf("output -> %s\n", outfile);
+
+    return 0;
+}
+```
+
+PRACTICAL TIPS & PITFALLS
+-------------------------
+- Always validate `argc` before accessing `argv[index]`.
+- Remember `argv` strings are owned by the runtime; `strdup` if you need to
+  keep or mutate them.
+- Beware shell quoting: arguments containing spaces must be quoted when calling
+  the program: `./prog "arg with spaces"`.
+- Use `strtol`/`strtod` and check `endptr` and `errno` for robust conversions.
+- `argv[argc]` is guaranteed to be `NULL` by the C standard — useful for
+  iterating with a pointer.
+
+ADVANCED: Exec-style usage
+--------------------------
+- When you build `argv` arrays to pass to `execv`/`execvp`, ensure the array
+  is NULL-terminated and the strings remain valid in memory after fork.
+
+EXERCISES
+---------
+1. Write a program `echoargs` that prints each argument length and its value.
+2. Build `sumargs` that sums integers passed on the command line and handles
+   invalid inputs gracefully (reporting the offending argument).
+3. Create a `grep-lite` that accepts `-i` (ignore case) and a pattern, then
+   reads stdin and prints matching lines.
+4. Write a wrapper `run-with-timeout` that accepts a timeout and a command
+   (use `fork()` + `execvp()` + `alarm()`/`setitimer()` to terminate the child).
+5. Convert the `project_translate_safe` CLI to accept `-s src` and `-t tgt`
+   command-line options (hint: the project already uses `getopt`).
+
+WHERE TO PUT THIS FILE
+----------------------
+The lesson lives at:
+  `week48b/ARGV_LESSON.txt`
+
+NEXT STEPS
+----------
+- If you want, I can commit this file into a new `translation-machine` subrepo
+  and push it to GitHub (SSH auth is ready). Tell me the remote name.
+
+================================================================================

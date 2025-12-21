@@ -1,0 +1,17 @@
+# Simple test program for AI Underwriting Engine
+CC = gcc
+CFLAGS = -std=c99 -Wall -Wextra -O2 -g
+LDFLAGS = -lm
+
+TARGET = test_ai_underwriting
+
+$(TARGET): test_ai_underwriting.c
+	$(CC) $(CFLAGS) $< -o $@ $(LDFLAGS)
+
+clean:
+	rm -f $(TARGET)
+
+run: $(TARGET)
+	./$(TARGET)
+
+.PHONY: clean run

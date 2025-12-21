@@ -1,0 +1,103 @@
+SMS 3413: FINANCIAL ECONOMICS FOR ACTUARIAL SCIENCES — CAT 1 ANSWERS
+
+Notes:
+- Where data is missing, reasonable standard assumptions are stated.
+- Market caps are used as market-portfolio weights; percentages are in decimals.
+
+1) Market price of risk under CAPM
+Data:
+- States s=1..4 with probabilities p=(0.2, 0.3, 0.1, 0.4)
+- Asset returns per state:
+  Asset1: (5%, 5%, 5%, 5%) — risk-free proxy (constant across states)
+  Asset2: (5%, 12%, 3%, 1%)
+  Asset3: (6%, 5%, 4%, 7%)
+- Correct market capitalization: (10000, 17546, 82454). Sum = 110000.
+- Market weights w = (w1, w2, w3) = (10000/110000, 17546/110000, 82454/110000)
+  ≈ (0.090909, 0.159509, 0.749582).
+
+Compute market portfolio return R_m in each state:
+- s1: R_m1 = 0.090909*0.05 + 0.159509*0.05 + 0.749582*0.06 ≈ 0.057496
+- s2: R_m2 = 0.090909*0.05 + 0.159509*0.12 + 0.749582*0.05 ≈ 0.061166
+- s3: R_m3 = 0.090909*0.05 + 0.159509*0.03 + 0.749582*0.04 ≈ 0.039314
+- s4: R_m4 = 0.090909*0.05 + 0.159509*0.01 + 0.749582*0.07 ≈ 0.058611
+
+Expected market return:
+E[R_m] = Σ p_s R_ms ≈ 0.2*0.057496 + 0.3*0.061166 + 0.1*0.039314 + 0.4*0.058611 ≈ 0.057225.
+
+Market variance:
+E[R_m^2] ≈ 0.2*(0.057496^2) + 0.3*(0.061166^2) + 0.1*(0.039314^2) + 0.4*(0.058611^2)
+≈ 0.003313.
+Var(R_m) = E[R_m^2] − (E[R_m])^2 ≈ 0.003313 − (0.057225)^2 ≈ 0.0000363.
+σ_m ≈ sqrt(0.0000363) ≈ 0.00603.
+
+Risk-free rate:
+Asset 1 is constant at 5% in all states ⇒ treat as risk-free: R_f = 0.05.
+
+Market price of risk:
+- Per variance (CAPM λ): λ = (E[R_m] − R_f) / Var(R_m) ≈ (0.057225 − 0.05) / 0.0000363 ≈ 198.9.
+- Sharpe ratio (per standard deviation): S = (E[R_m] − R_f) / σ_m ≈ 0.007225 / 0.00603 ≈ 1.20.
+
+2) First-order Stochastic Dominance (FSD) — Statement and proof sketch
+Statement:
+Random variable X first-order stochastically dominates Y (written X ⪰_FSD Y) if and only if
+F_X(t) ≤ F_Y(t) for all t, with strict inequality on a set of positive measure for strict dominance.
+Equivalently, for every increasing utility u, E[u(X)] ≥ E[u(Y)].
+
+Proof sketch (⇒ direction):
+If F_X(t) ≤ F_Y(t) ∀t, then X yields higher quantiles for all probabilities. For any increasing u,
+by integration by parts or quantile coupling, E[u(X)] ≥ E[u(Y)].
+
+Proof sketch (⇐ direction):
+If E[u(X)] ≥ E[u(Y)] for all increasing u, choose indicator utilities u_z(x) = 1{x ≥ z} (approximated),
+then E[u_z(X)] = P(X ≥ z) ≥ P(Y ≥ z) ⇒ 1 − F_X(z) ≥ 1 − F_Y(z) ⇒ F_X(z) ≤ F_Y(z) for all z.
+Thus, FSD holds.
+
+3) Long call vs forward (K=950, forward price=950)
+- Long forward at price 950: Payoff at maturity = S_T − 950; zero cost today (ignoring margin); linear exposure.
+- Long call with strike 950: Payoff = max(S_T − 950, 0); costs premium today; non-linear exposure with downside limited to premium.
+Key differences:
+- Optionality: Call provides right, not obligation; forward is obligation.
+- Upfront cash: Call requires premium; forward typically no premium.
+- Risk: Call caps downside at premium; forward has symmetric linear P/L.
+- When S_T ≤ 950: Forward loses (950 − S_T); call expires worthless (loss = premium only).
+
+4) Risk measures for R = 15,000 − 25,000 U, where U ~ Uniform(0,1)
+Support of R: Since U∈[0,1], R∈[−10,000, 15,000] uniformly (linear transform of U).
+Mean:
+μ = (min + max)/2 = (−10,000 + 15,000)/2 = 2,500.
+Variance:
+For uniform on [L,H], Var = (H − L)^2 / 12 = (25,000)^2 / 12 = 625,000,000 / 12 ≈ 52,083,333.33.
+Downside semivariance (relative to μ):
+Semivar = E[(μ − R)^2 1{R ≤ μ}] = ∫_{L}^{μ} (μ − r)^2 f(r) dr, with f(r)=1/25,000.
+Let x = μ − r, x runs from 12,500 down to 0; integral = (1/25,000) ∫_{0}^{12,500} x^2 dx = (1/25,000)*(12,500^3/3)
+= (1/25,000)*(1,953,125,000,000/3) ≈ 26,041,666.67.
+Shortfall probability at £10,000:
+P(R < 10,000) = length below 10,000 / total length = (10,000 − (−10,000)) / 25,000 = 20,000/25,000 = 0.8.
+Alternatively, R < 10,000 ⇒ 15,000 − 25,000U < 10,000 ⇒ U > 0.2 ⇒ P=0.8.
+Value at Risk (VaR) at 5%:
+5th percentile of R: q_0.05 = L + 0.05*(H − L) = −10,000 + 0.05*25,000 = −8,750.
+If VaR is reported as a positive loss amount: VaR_5% = 8,750.
+
+5) Put price via put–call parity
+Given:
+- C (call premium) = 187.06
+- S_0 = 5,000; K = 5,250; T = 0.5 years; r = 5% p.a.; no dividends.
+Put–call parity (no dividends): C − P = S_0 − K e^{−rT} ⇒ P = C − S_0 + K e^{−rT}.
+Compute PV(K): K e^{−rT} = 5,250 * e^{−0.05*0.5} = 5,250 * e^{−0.025} ≈ 5,250 * 0.9753099 ≈ 5,120.88.
+Then:
+P ≈ 187.06 − 5,000 + 5,120.88 ≈ 307.94.
+
+6) Greeks — definitions and what they measure
+- Delta (Δ): ∂V/∂S. Sensitivity of option value to small changes in underlying price; approx number of shares to delta-hedge.
+- Gamma (Γ): ∂^2V/∂S^2. Curvature of value w.r.t. underlying; risk of delta changing; higher for near-the-money options.
+- Theta (Θ): ∂V/∂t. Time decay; change in value as time passes (typically negative for long options).
+- Vega (often denoted ν or κ/kappa in some texts): ∂V/∂σ. Sensitivity to volatility; long options have positive vega.
+- Rho (ρ): ∂V/∂r. Sensitivity to interest rate; calls typically positive rho, puts negative.
+Brief meanings:
+- Δ: price sensitivity; hedge ratio.
+- Γ: nonlinearity; how fast Δ changes.
+- Θ: passage of time effect.
+- Vega/κ: volatility exposure.
+- ρ: interest-rate exposure.
+
+End of answers.
