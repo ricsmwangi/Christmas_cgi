@@ -7,6 +7,19 @@
 
 #define MAX_PARTICIPANTS 20
 
+// Helper function to escape single quotes in strings for JavaScript
+void escape_for_js(const char *str) {
+    if (!str) return;
+    for (int i = 0; str[i]; i++) {
+        if (str[i] == '\'') printf("\\\\'");
+        else if (str[i] == '"') printf("\\\\\"");
+        else if (str[i] == '\\') printf("\\\\\\\\");
+        else if (str[i] == '\n') printf("\\\\n");
+        else if (str[i] == '\r') printf("\\\\r");
+        else printf("%c", str[i]);
+    }
+}
+
 // Function prototypes
 void show_main_menu();
 void show_tree_section();
@@ -201,27 +214,23 @@ void show_card_section() {
         printf("</div>\n");
         
         printf("<script>\n");
-        printf("function escapeHTML(text) {\n");
-        printf("    const map = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#039;'};\n");
-        printf("    return (text || '').replace(/[&<>\"']/g, c => map[c]);\n");
-        printf("}\n");
         printf("function shareCardURL() {\n");
-        printf("    const url = new URL(window.location);\n");
-        printf("    const r = document.querySelector('input[name=\"recipient\"]');\n");
-        printf("    const m = document.querySelector('textarea[name=\"message\"]');\n");
-        printf("    const t = document.querySelector('select[name=\"theme\"]');\n");
-        printf("    if (!r || !r.value || !m || !m.value) {\n");
-        printf("        alert('Please fill in both recipient and message first!');\n");
-        printf("        return;\n");
-        printf("    }\n");
-        printf("    url.searchParams.set('action', 'card');\n");
-        printf("    url.searchParams.set('recipient', r.value);\n");
-        printf("    url.searchParams.set('message', m.value);\n");
-        printf("    url.searchParams.set('theme', t ? t.value : 'traditional');\n");
-        printf("    const cardURL = url.toString();\n");
-        printf("    console.log('Generated Share URL:', cardURL);\n");
+        printf("    const params = new URLSearchParams({\n");
+        printf("        action: 'card',\n");
+        printf("        recipient: '");
+        escape_for_js(recipient);
+        printf("',\n");
+        printf("        message: '");
+        escape_for_js(message);
+        printf("',\n");
+        printf("        theme: '");
+        escape_for_js(theme ? theme : "traditional");
+        printf("'\n");
+        printf("    });\n");
+        printf("    const cardURL = window.location.origin + '/?' + params.toString();\n");
+        printf("    console.log('Share URL:', cardURL);\n");
         printf("    navigator.clipboard.writeText(cardURL).then(() => {\n");
-        printf("        alert('✅ Card link copied!\\n\\nShare this link with friends to show them your card!');\n");
+        printf("        alert('✅ Link copied!\\n\\nFriends can now see your card!');\n");
         printf("    }).catch(() => {\n");
         printf("        prompt('Copy this link:', cardURL);\n");
         printf("    });\n");
