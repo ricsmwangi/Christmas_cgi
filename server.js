@@ -80,5 +80,3 @@ app.all('*', async (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🎄 Christmas CGI Server running on port ${PORT}`);
 });
-    console.log(`🎄 Christmas CGI on port ${PORT}`);
-});
