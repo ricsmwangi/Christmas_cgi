@@ -242,26 +242,35 @@ void html_submit_button(const char *text) {
 void html_christmas_tree(int height, const char *ornaments, const char *color) {
     printf("<div class='christmas-tree'>\n");
     printf("<h2>🎄 Your Christmas Tree</h2>\n");
-    printf("<pre style='color: %s;'>\n", color ? color : "#228b22");
+    printf("<div style='color: %s; font-family: monospace; letter-spacing: 2px; line-height: 1.2; text-align: center; font-weight: bold; font-size: 20px;'>\n", color ? color : "#228b22");
 
     // Generate tree
     for(int i = 1; i <= height; i++) {
+        printf("<div>");
         // Add spaces for centering
-        for(int spaces = 0; spaces < height - i; spaces++) printf(" ");
+        for(int spaces = 0; spaces < height - i; spaces++) printf("&nbsp;");
         // Add ornaments
         for(int stars = 0; stars < 2 * i - 1; stars++) {
-            printf("%c", ornaments ? ornaments[stars % strlen(ornaments)] : '*');
+            if (ornaments && strlen(ornaments) > 0) {
+                char c = ornaments[stars % strlen(ornaments)];
+                if (c == '*') printf("★");
+                else if (c == '!') printf("✨");
+                else printf("%c", c);
+            } else {
+                printf("★");
+            }
         }
-        printf("\n");
+        printf("</div>\n");
     }
 
     // Tree trunk
     for(int i = 0; i < 3; i++) {
-        for(int spaces = 0; spaces < height - 1; spaces++) printf(" ");
-        printf("|||\n");
+        printf("<div>");
+        for(int spaces = 0; spaces < height - 1; spaces++) printf("&nbsp;");
+        printf("║&nbsp;║&nbsp;║</div>\n");
     }
 
-    printf("</pre>\n");
+    printf("</div>\n");
     printf("</div>\n");
 }
 
