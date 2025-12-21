@@ -47,7 +47,8 @@ void html_footer(void) {
     printf("        <p style='color: #ffd700; font-size: 14px; line-height: 1.6;'>\n");
     printf("            🎄 Hey guys, so this festive season you can enjoy something I made for everyone! 🎄<br>\n");
     printf("            A little holiday magic ✨<br>\n");
-    printf("            © 2025 Santa's Mini Market - Spreading Holiday Cheer! 🎅\n");
+    printf("            © 2025 Santa's Mini Market - Spreading Holiday Cheer! 🎅<br>\n");
+    printf("            <strong style='color: #ff69b4;'>Made with ❤️ by #rkb!</strong>\n");
     printf("        </p>\n");
     printf("    </footer>\n");
     printf("    <script>\n");
