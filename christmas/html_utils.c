@@ -35,6 +35,14 @@ void html_header(const char *title, const char *css) {
 // Generate HTML document footer
 void html_footer(void) {
     printf("    </div>\n");
+    printf("    <footer style='text-align: center; margin-top: 40px; padding: 20px; border-top: 2px solid rgba(255,215,0,0.3);'>\n");
+    printf("        <p style='color: #ffd700; font-size: 14px; line-height: 1.6;'>\n");
+    printf("            🎄 Hey guys, so this festive season you can enjoy something I made for everyone! 🎄<br>\n");
+    printf("            A little holiday magic built in pure C for the web ✨<br><br>\n");
+    printf("            Built with ❤️ | CGI Powered | Rendered on Render.com<br>\n");
+    printf("            © 2025 Santa's Mini Market - Spreading Holiday Cheer! 🎅\n");
+    printf("        </p>\n");
+    printf("    </footer>\n");
     printf("    <script>\n");
     printf("        // Add some festive JavaScript\n");
     printf("        document.addEventListener('DOMContentLoaded', function() {\n");
