@@ -279,11 +279,8 @@ void html_holiday_card(const char *recipient, const char *message, const char *t
     printf("<h2>🎄 Happy Holidays, %s!</h2>\n", recipient);
     printf("<div style='display: flex; align-items: center; gap: 20px; margin: 20px 0;'>\n");
     
-    // Cartoon Santa pointing at message
-    printf("<div style='font-size: 60px; text-align: center; flex-shrink: 0;'>\n");
-    printf("    <div style='animation: point 2s infinite;'>☜</div>\n");
-    printf("    <div style='font-size: 40px; margin-top: -10px;'>🎅</div>\n");
-    printf("</div>\n");
+    // Santa emoji
+    printf("<div style='font-size: 60px; text-align: center; flex-shrink: 0;'>🎅</div>\n");
     
     // Message box
     printf("<div style='background: rgba(255,255,255,0.9); color: #333; padding: 20px; border-radius: 10px; flex-grow: 1;'>\n");
