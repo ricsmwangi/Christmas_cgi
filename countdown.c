@@ -9,9 +9,6 @@ int main() {
     // Initialize CGI environment
     cgi_init();
 
-    // Log access
-    log_access("countdown", "access");
-
     html_header("⏰ Christmas Countdown", NULL);
 
     printf("<h1>⏰ Christmas Countdown</h1>\n");

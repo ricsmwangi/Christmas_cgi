@@ -11,9 +11,6 @@ int main() {
     // Initialize CGI environment
     cgi_init();
 
-    // Log access
-    log_access("santa", "access");
-
     // Get form data
     char *submit = cgi_get_param("submit");
     char *participants_str = cgi_get_param("participants");

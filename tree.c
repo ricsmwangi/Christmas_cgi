@@ -8,9 +8,6 @@ int main() {
     // Initialize CGI environment
     cgi_init();
 
-    // Log access
-    log_access("tree", "access");
-
     // Get parameters
     char *height_str = cgi_get_param("height");
     char *ornaments = cgi_get_param("ornaments");

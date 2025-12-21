@@ -8,9 +8,6 @@ int main() {
     // Initialize CGI environment
     cgi_init();
 
-    // Log access
-    log_access("card", "access");
-
     // Check if form was submitted
     char *submit = cgi_get_param("submit");
     char *recipient = cgi_get_param("recipient");

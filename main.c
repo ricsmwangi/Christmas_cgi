@@ -19,9 +19,6 @@ int main() {
     // Initialize CGI environment
     cgi_init();
 
-    // Log access
-    log_access("main", "access");
-
     // Get action parameter to determine what to show
     char *action = cgi_get_param("action");
 
