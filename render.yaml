@@ -1,6 +1,6 @@
 services:
   - type: web
     name: christmas-cgi
-    env: node
-    buildCommand: npm install && make
+    env: docker
+    dockerfilePath: ./Dockerfile
     startCommand: npm start
