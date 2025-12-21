@@ -1,5 +1,5 @@
 const express = require('express');
-const { execSync } = require('child_process');
+const { spawn } = require('child_process');
 const path = require('path');
 
 const app = express();
@@ -8,45 +8,77 @@ const PORT = process.env.PORT || 3000;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-function executeCGI(scriptName, queryString = '') {
-    try {
+function executeCGI(scriptName, queryString = '', timeout = 5000) {
+    return new Promise((resolve, reject) => {
         const env = Object.assign({}, process.env, {
             REQUEST_METHOD: 'GET',
             QUERY_STRING: queryString
         });
 
-        const result = execSync(`./${scriptName}`, {
+        const child = spawn(`./${scriptName}`, [], {
             env,
             cwd: __dirname,
-            encoding: 'utf-8'
+            timeout
         });
 
-        return result.replace(/^Content-Type:.*\n\n?/, '');
-    } catch (error) {
-        console.error(`CGI Error: ${error.message}`);
-        return `<h1>Error</h1><p>${error.message}</p>`;
-    }
+        let output = '';
+        let error = '';
+
+        child.stdout.on('data', (data) => {
+            output += data.toString();
+        });
+
+        child.stderr.on('data', (data) => {
+            error += data.toString();
+        });
+
+        child.on('close', (code) => {
+            if (code !== 0) {
+                reject(new Error(`Process exited with code ${code}: ${error}`));
+            } else {
+                resolve(output);
+            }
+        });
+
+        child.on('error', (err) => {
+            reject(err);
+        });
+    });
 }
 
-app.get('/', (req, res) => {
-    const html = executeCGI('main.cgi');
-    res.set('Content-Type', 'text/html').send(html);
+app.get('/', async (req, res) => {
+    try {
+        const html = await executeCGI('main.cgi', '');
+        res.set('Content-Type', 'text/html').send(html);
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send(`<h1>Error</h1><p>${error.message}</p>`);
+    }
 });
 
-app.get('/:action', (req, res) => {
-    const { action } = req.params;
-    const queryString = `action=${action}`;
-    const html = executeCGI('main.cgi', queryString);
-    res.set('Content-Type', 'text/html').send(html);
+app.get('/index.html', async (req, res) => {
+    try {
+        const html = await executeCGI('main.cgi', '');
+        res.set('Content-Type', 'text/html').send(html);
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send(`<h1>Error</h1><p>${error.message}</p>`);
+    }
 });
 
-app.post('/tree', (req, res) => {
-    const { height } = req.body;
-    const queryString = `action=tree&height=${height || 8}`;
-    const html = executeCGI('main.cgi', queryString);
-    res.set('Content-Type', 'text/html').send(html);
+app.all('*', async (req, res) => {
+    try {
+        const queryString = new URLSearchParams(req.query).toString();
+        const html = await executeCGI('main.cgi', queryString);
+        res.set('Content-Type', 'text/html').send(html);
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send(`<h1>Error</h1><p>${error.message}</p>`);
+    }
 });
 
 app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🎄 Christmas CGI Server running on port ${PORT}`);
+});
     console.log(`🎄 Christmas CGI on port ${PORT}`);
 });
