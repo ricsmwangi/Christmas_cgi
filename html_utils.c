@@ -68,7 +68,7 @@ void html_footer(void) {
     printf("                snowflake.style.color = 'white';\n");
     printf("                snowflake.style.fontSize = Math.random() * 20 + 10 + 'px';\n");
     printf("                snowflake.style.left = Math.random() * 100 + '%%';\n");
-    printf("                snowflake.style.animation = 'fall ' + (Math.random() * 3 + 2) + 's linear infinite';\n");
+    printf("                snowflake.style.animation = 'fall ' + (Math.random() * 6 + 8) + 's linear infinite';\n");
     printf("                snowflake.style.animationDelay = Math.random() * 2 + 's';\n");
     printf("                snowContainer.appendChild(snowflake);\n");
     printf("            }\n");
