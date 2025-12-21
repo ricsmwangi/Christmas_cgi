@@ -184,9 +184,23 @@ void show_card_section() {
 
         printf("<div style='text-align: center; margin: 20px;'>\n");
         printf("<button onclick='copyCard()' style='background: #4ecdc4; color: white; padding: 10px 20px; border-radius: 25px; border: none; cursor: pointer; margin: 5px;'>📋 Copy Card</button>\n");
-        printf("<button onclick='shareCard()' style='background: #ffd700; color: #333; padding: 10px 20px; border-radius: 25px; border: none; cursor: pointer; margin: 5px;'>🔗 Share Card</button>\n");
+        printf("<button onclick='shareCardURL()' style='background: #ffd700; color: #333; padding: 10px 20px; border-radius: 25px; border: none; cursor: pointer; margin: 5px;'>🔗 Share Card Link</button>\n");
         printf("<a href='?action=card' style='background: #ff69b4; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; display: inline-block; margin: 5px;'>Create Another Card</a>\n");
         printf("</div>\n");
+        
+        printf("<script>\n");
+        printf("function shareCardURL() {\n");
+        printf("    const recipient = '%s';\n", recipient);
+        printf("    const message = '%s';\n", message);
+        printf("    const theme = '%s';\n", theme ? theme : "traditional");
+        printf("    const cardURL = window.location.origin + '/?action=card&recipient=' + encodeURIComponent(recipient) + '&message=' + encodeURIComponent(message) + '&theme=' + encodeURIComponent(theme);\n");
+        printf("    navigator.clipboard.writeText(cardURL).then(() => {\n");
+        printf("        alert('🔗 Card link copied to clipboard!\\n\\nShare this link so others can see your card!');\n");
+        printf("    }).catch(() => {\n");
+        printf("        alert('Card URL: ' + cardURL);\n");
+        printf("    });\n");
+        printf("}\n");
+        printf("</script>\n");
     }
 
     // Card creation form
