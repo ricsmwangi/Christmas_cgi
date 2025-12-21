@@ -138,7 +138,7 @@ int main() {
 
     // Form for participants
     printf("<h2>🎄 Add Participants</h2>\n");
-    html_form_start("?action=santa", "POST");
+    html_form_start("?action=santa", "GET");
 
     printf("<label>Participants (comma-separated):</label>\n");
     html_text_input("participants", "Alice, Bob, Charlie, Diana", participants_str);

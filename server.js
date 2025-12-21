@@ -85,7 +85,12 @@ app.all('*', async (req, res) => {
         const url = new URL(req.url, `http://${req.get('host')}`);
         const queryString = url.searchParams.toString();
         const isPost = req.method === 'POST';
-        const postData = isPost ? new URLSearchParams(req.body).toString() : '';
+        
+        // Convert req.body object to form-encoded string
+        let postData = '';
+        if (isPost && req.body) {
+            postData = new URLSearchParams(req.body).toString();
+        }
         
         const output = await executeCGI('main.cgi', queryString, postData, isPost);
         

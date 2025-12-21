@@ -31,7 +31,7 @@ int main() {
     }
 
     // Form for creating card
-    html_form_start("?action=card", "POST");
+    html_form_start("?action=card", "GET");
 
     printf("<label>Recipient Name:</label>\n");
     html_text_input("recipient", "Who is this card for?", recipient);
