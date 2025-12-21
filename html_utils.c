@@ -310,8 +310,15 @@ void html_countdown_timer(void) {
     printf("    const elem = document.getElementById('countdown-display');\n");
     printf("    if (elem) elem.innerHTML = display;\n");
     printf("}\n");
-    printf("updateCountdown();\n");
-    printf("setInterval(updateCountdown, 1000);\n");
+    printf("if (document.readyState === 'loading') {\n");
+    printf("    document.addEventListener('DOMContentLoaded', function() {\n");
+    printf("        updateCountdown();\n");
+    printf("        setInterval(updateCountdown, 1000);\n");
+    printf("    });\n");
+    printf("} else {\n");
+    printf("    updateCountdown();\n");
+    printf("    setInterval(updateCountdown, 1000);\n");
+    printf("}\n");
     printf("</script>\n");
     printf("</div>\n");
 }
