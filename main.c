@@ -171,7 +171,6 @@ void show_tree_section() {
 
 void show_card_section() {
     // Get form data
-    char *submit = cgi_get_param("submit");
     char *recipient = cgi_get_param("recipient");
     char *message = cgi_get_param("message");
     char *theme = cgi_get_param("theme");
@@ -179,7 +178,8 @@ void show_card_section() {
     printf("<div style='background: rgba(255, 105, 180, 0.1); padding: 20px; border-radius: 10px; margin: 20px 0;'>\n");
     printf("<h2>🎅 Holiday Card Creator</h2>\n");
 
-    if (submit && recipient && message) {
+    // Show card if both recipient and message are provided
+    if (recipient && recipient[0] != '\0' && message && message[0] != '\0') {
         // Show the created card
         printf("<h3>Your Holiday Card:</h3>\n");
         html_holiday_card(recipient, message, theme);
@@ -191,7 +191,7 @@ void show_card_section() {
 
     // Card creation form
     printf("<h3>Create a New Card:</h3>\n");
-    html_form_start("?action=card", "POST");
+    html_form_start("?action=card", "GET");
 
     printf("<div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;'>\n");
 
@@ -227,13 +227,12 @@ void show_card_section() {
 
 void show_santa_section() {
     // Get form data
-    char *submit = cgi_get_param("submit");
     char *participants_str = cgi_get_param("participants");
 
     printf("<div style='background: rgba(255, 69, 0, 0.1); padding: 20px; border-radius: 10px; margin: 20px 0;'>\n");
     printf("<h2>🎁 Secret Santa Randomizer</h2>\n");
 
-    if (submit && participants_str) {
+    if (participants_str && participants_str[0] != '\0') {
         // Parse and process participants (same logic as santa.c)
         char *participants[MAX_PARTICIPANTS];
         int count = 0;
@@ -336,7 +335,7 @@ void show_santa_section() {
 
     // Secret Santa form
     printf("<h3>Add Participants:</h3>\n");
-    html_form_start("?action=santa", "POST");
+    html_form_start("?action=santa", "GET");
 
     printf("<label>Participants (comma-separated):</label>\n");
     html_text_input("participants", "Alice, Bob, Charlie, Diana", participants_str);
