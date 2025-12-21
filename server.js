@@ -68,7 +68,9 @@ app.get('/index.html', async (req, res) => {
 
 app.all('*', async (req, res) => {
     try {
-        const queryString = new URLSearchParams(req.query).toString();
+        // Extract query string from URL, handling both ? and direct parameters
+        const url = new URL(req.url, `http://${req.get('host')}`);
+        const queryString = url.searchParams.toString();
         const html = await executeCGI('main.cgi', queryString);
         res.set('Content-Type', 'text/html').send(html);
     } catch (error) {
