@@ -54,6 +54,18 @@ int main() {
 }
 
 void show_main_menu() {
+    // Dancing Santa at the top of dashboard
+    printf("<div style='text-align: center; margin-bottom: 40px; font-size: 80px; animation: santaDance 1.5s infinite;'>🎅</div>\n");
+    printf("<style>\n");
+    printf("    @keyframes santaDance {\n");
+    printf("        0%% { transform: translateX(-10px) rotate(-5deg); }\n");
+    printf("        25%% { transform: translateX(10px) rotate(5deg); }\n");
+    printf("        50%% { transform: translateX(-10px) rotate(-5deg); }\n");
+    printf("        75%% { transform: translateX(10px) rotate(5deg); }\n");
+    printf("        100%% { transform: translateX(-10px) rotate(-5deg); }\n");
+    printf("    }\n");
+    printf("</style>\n");
+    
     printf("<div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 30px 0;'>\n");
 
     // Christmas Tree Option
@@ -189,23 +201,18 @@ void show_card_section() {
         printf("</div>\n");
         
         printf("<script>\n");
-        printf("function escapeQuotes(str) {\n");
-        printf("    return (str || '').replace(/\\\\/g, '\\\\\\\\').replace(/'/g, \"\\\\'\").replace(/\\\"/g, '\\\\\\\"');\n");
-        printf("}\n\n");
         printf("function shareCardURL() {\n");
-        printf("    const cardData = {\n");
-        printf("        action: 'card',\n");
-        printf("        recipient: escapeQuotes('%s'),\n", recipient);
-        printf("        message: escapeQuotes('%s'),\n", message);
-        printf("        theme: escapeQuotes('%s')\n", theme ? theme : "traditional");
-        printf("    };\n");
-        printf("    const params = new URLSearchParams(cardData);\n");
-        printf("    const cardURL = window.location.origin + '/?' + params.toString();\n");
-        printf("    console.log('Generated URL:', cardURL);\n");
+        printf("    const url = new URL(window.location);\n");
+        printf("    url.searchParams.set('action', 'card');\n");
+        printf("    url.searchParams.set('recipient', '%s');\n", recipient);
+        printf("    url.searchParams.set('message', '%s');\n", message);
+        printf("    url.searchParams.set('theme', '%s');\n", theme ? theme : "traditional");
+        printf("    const cardURL = url.toString();\n");
+        printf("    console.log('Card URL:', cardURL);\n");
         printf("    navigator.clipboard.writeText(cardURL).then(() => {\n");
-        printf("        alert('✅ Card link copied!\\n\\nShare with friends!');\n");
+        printf("        alert('✅ Card link copied!\\n\\nYour friends will see your exact card when they visit this link!');\n");
         printf("    }).catch(() => {\n");
-        printf("        alert('Link: ' + cardURL);\n");
+        printf("        prompt('Copy this link:', cardURL);\n");
         printf("    });\n");
         printf("}\n");
         printf("</script>\n");
