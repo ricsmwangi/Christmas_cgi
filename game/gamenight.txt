@@ -1,5 +1,0 @@
-Name:mwas
-:Number guess:10
-Name:mwas
-Number guess:2Name:Makaveli
-Number guess:2

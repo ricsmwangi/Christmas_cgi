@@ -1,5 +1,0 @@
-Data is as follows:
-so this file is for experinmenting Data is as follows:
-whether i can collect data till the user Data is as follows:
-types quit 
-so the code is working well i just have to understand it now the key is putting while to one or truethen getting the user datathen clearing the line since ill be using the fgetsthat is input[strcspn(input, "\n")] = 0;then after that you must handle the quit or the loop can go on foreverso to break when the user types quituse an if statementif(strcmp(data, "quit") == 0;{break}then you can fprintf the data on the file opened,,,then remember to close the fileyosh that is it for today...i guess ill be doing this..every time icodei mke sure to open a file in that code and write what i have learnt....so the files for lessons will be called lessonsthat i slesson1lesson 2lesson 3and on and onbye for today
