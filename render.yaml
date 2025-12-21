@@ -1,6 +1,0 @@
-services:
-  - type: web
-    name: christmas-cgi
-    env: docker
-    dockerfilePath: ./Dockerfile
-    startCommand: npm start
