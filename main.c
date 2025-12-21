@@ -103,8 +103,8 @@ void show_tree_section() {
     // Set defaults
     int height = height_str ? atoi(height_str) : 10;
     if (height < 3 || height > 20) height = 10;
-    if (!ornaments) ornaments = "*!";
-    if (!color) color = "#228b22";
+    if (!ornaments) ornaments = "🎄❄️*!";
+    if (!color) color = "#ff0000";
 
     printf("<div style='background: rgba(34, 139, 34, 0.1); padding: 20px; border-radius: 10px; margin: 20px 0;'>\n");
     printf("<h2>🎄 Christmas Tree Generator</h2>\n");
@@ -116,7 +116,7 @@ void show_tree_section() {
         if (message && strlen(message) > 0) {
             char escaped_message[1024];
             html_escape(message, escaped_message, sizeof(escaped_message));
-            printf("<div style='text-align: center; margin: 20px 0; font-size: 18px; color: #228b22;'>\n");
+            printf("<div style='text-align: center; margin: 20px 0; font-size: 18px; color: #ffd700; font-weight: bold;'>\n");
             printf("✨ %s ✨\n", escaped_message);
             printf("</div>\n");
         }
@@ -141,10 +141,11 @@ void show_tree_section() {
     printf("<div>\n");
     printf("<label>Tree Color:</label>\n");
     html_select_start("color");
+    html_select_option("#ff0000", "Red ❤️", strcmp(color, "#ff0000") == 0);
     html_select_option("#228b22", "Green", strcmp(color, "#228b22") == 0);
-    html_select_option("#ff6b6b", "Red", strcmp(color, "#ff6b6b") == 0);
     html_select_option("#ffd93d", "Gold", strcmp(color, "#ffd93d") == 0);
     html_select_option("#6bcf7f", "Light Green", strcmp(color, "#6bcf7f") == 0);
+    html_select_option("#ff69b4", "Pink", strcmp(color, "#ff69b4") == 0);
     html_select_end();
     printf("</div>\n");
 
@@ -160,7 +161,7 @@ void show_tree_section() {
     html_form_end();
 
     printf("<p style='text-align: center; margin-top: 20px;'>\n");
-    printf("<a href='?' style='color: #228b22;'>← Back to Main Menu</a>\n");
+    printf("<a href='?' class='nav-back'>← Back to Main Menu</a>\n");
     printf("</p>\n");
 
     printf("</div>\n");
@@ -218,7 +219,7 @@ void show_card_section() {
     html_form_end();
 
     printf("<p style='text-align: center; margin-top: 20px;'>\n");
-    printf("<a href='?' style='color: #ff69b4;'>← Back to Main Menu</a>\n");
+    printf("<a href='?' class='nav-back'>← Back to Main Menu</a>\n");
     printf("</p>\n");
 
     printf("</div>\n");
@@ -344,7 +345,7 @@ void show_santa_section() {
     html_form_end();
 
     printf("<p style='text-align: center; margin-top: 20px;'>\n");
-    printf("<a href='?' style='color: #ff4500;'>← Back to Main Menu</a>\n");
+    printf("<a href='?' class='nav-back'>← Back to Main Menu</a>\n");
     printf("</p>\n");
 
     printf("</div>\n");
@@ -380,7 +381,7 @@ void show_countdown_section() {
     printf("</div>\n");
 
     printf("<p style='text-align: center; margin-top: 20px;'>\n");
-    printf("<a href='?' style='color: #4169e1;'>← Back to Main Menu</a>\n");
+    printf("<a href='?' class='nav-back'>← Back to Main Menu</a>\n");
     printf("</p>\n");
 
     printf("</div>\n");
@@ -434,7 +435,7 @@ void show_about_section() {
     printf("</div>\n");
 
     printf("<p style='text-align: center; margin-top: 20px;'>\n");
-    printf("<a href='?' style='color: #ffd700;'>← Back to Main Menu</a>\n");
+    printf("<a href='?' class='nav-back'>← Back to Main Menu</a>\n");
     printf("</p>\n");
 
     printf("</div>\n");
