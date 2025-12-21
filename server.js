@@ -58,8 +58,10 @@ function executeCGI(scriptName, queryString = '', postData = '', isPost = false,
 
 app.get('/', async (req, res) => {
     try {
-        const html = await executeCGI('main.cgi', '');
-        res.set('Content-Type', 'text/html').send(html);
+        const output = await executeCGI('main.cgi', '');
+        const parts = output.split('\n\n');
+        const body = parts.length > 1 ? parts.slice(1).join('\n\n') : output;
+        res.set('Content-Type', 'text/html').send(body);
     } catch (error) {
         console.error('Error:', error);
         res.status(500).send(`<h1>Error</h1><p>${error.message}</p>`);
@@ -68,8 +70,10 @@ app.get('/', async (req, res) => {
 
 app.get('/index.html', async (req, res) => {
     try {
-        const html = await executeCGI('main.cgi', '');
-        res.set('Content-Type', 'text/html').send(html);
+        const output = await executeCGI('main.cgi', '');
+        const parts = output.split('\n\n');
+        const body = parts.length > 1 ? parts.slice(1).join('\n\n') : output;
+        res.set('Content-Type', 'text/html').send(body);
     } catch (error) {
         console.error('Error:', error);
         res.status(500).send(`<h1>Error</h1><p>${error.message}</p>`);
@@ -83,8 +87,13 @@ app.all('*', async (req, res) => {
         const isPost = req.method === 'POST';
         const postData = isPost ? new URLSearchParams(req.body).toString() : '';
         
-        const html = await executeCGI('main.cgi', queryString, postData, isPost);
-        res.set('Content-Type', 'text/html').send(html);
+        const output = await executeCGI('main.cgi', queryString, postData, isPost);
+        
+        // Strip CGI headers (everything before first blank line)
+        const parts = output.split('\n\n');
+        const body = parts.length > 1 ? parts.slice(1).join('\n\n') : output;
+        
+        res.set('Content-Type', 'text/html').send(body);
     } catch (error) {
         console.error('Error:', error);
         res.status(500).send(`<h1>Error</h1><p>${error.message}</p>`);

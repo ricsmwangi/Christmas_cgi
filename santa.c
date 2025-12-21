@@ -19,7 +19,7 @@ int main() {
 
     printf("<h1>🎅 Secret Santa Randomizer</h1>\n");
 
-    if (submit && participants_str) {
+    if (participants_str && participants_str[0] != '\0') {
         // Parse participants (assuming comma-separated)
         char *participants[MAX_PARTICIPANTS];
         int count = 0;

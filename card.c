@@ -16,7 +16,8 @@ int main() {
 
     html_header("🎄 Holiday Card Creator", NULL);
 
-    if (submit && recipient && message) {
+    // Show card only if recipient AND message are provided (not requiring submit button)
+    if (recipient && recipient[0] != '\0' && message && message[0] != '\0') {
         // Show the created card
         printf("<h1>🎄 Your Holiday Card</h1>\n");
         html_holiday_card(recipient, message, theme);

@@ -26,18 +26,36 @@ void cgi_init(void) {
     // Parse GET parameters
     if (cgi_query_string) {
         char *query = strdup(cgi_query_string);
-        char *token = strtok(query, "&");
-        while (token && param_count < MAX_PARAMS) {
-            char *eq = strchr(token, '=');
-            if (eq) {
-                *eq = '\0';
-                url_decode(token);
-                url_decode(eq + 1);
-                strncpy(param_names[param_count], token, MAX_PARAM_LEN - 1);
-                strncpy(param_values[param_count], eq + 1, MAX_PARAM_LEN - 1);
-                param_count++;
-            }
-            token = strtok(NULL, "&");
+        char *pos = query;
+        
+        while (*pos && param_count < MAX_PARAMS) {
+            char *eq = strchr(pos, '=');
+            if (!eq) break;
+            
+            // Find the end of this parameter (& or \0)
+            char *amp = strchr(eq, '&');
+            int param_len = amp ? (amp - pos) : strlen(pos);
+            
+            // Extract name
+            char name[MAX_PARAM_LEN];
+            int name_len = eq - pos;
+            strncpy(name, pos, name_len);
+            name[name_len] = '\0';
+            url_decode(name);
+            
+            // Extract value
+            char value[MAX_PARAM_LEN];
+            int value_len = param_len - name_len - 1;  // -1 for '='
+            strncpy(value, eq + 1, value_len);
+            value[value_len] = '\0';
+            url_decode(value);
+            
+            strncpy(param_names[param_count], name, MAX_PARAM_LEN - 1);
+            strncpy(param_values[param_count], value, MAX_PARAM_LEN - 1);
+            param_count++;
+            
+            // Move to next parameter
+            pos = amp ? (amp + 1) : (pos + param_len);
         }
         free(query);
     }
@@ -52,19 +70,29 @@ void cgi_init(void) {
                 post_data[len] = '\0';
 
                 // Parse POST parameters (assuming application/x-www-form-urlencoded)
-                char *token = strtok(post_data, "&");
+                // Use a copy for strtok since it modifies the string
+                char *post_copy = strdup(post_data);
+                char *token = strtok(post_copy, "&");
                 while (token && param_count < MAX_PARAMS) {
                     char *eq = strchr(token, '=');
                     if (eq) {
-                        *eq = '\0';
-                        url_decode(token);
-                        url_decode(eq + 1);
-                        strncpy(param_names[param_count], token, MAX_PARAM_LEN - 1);
-                        strncpy(param_values[param_count], eq + 1, MAX_PARAM_LEN - 1);
+                        char name[MAX_PARAM_LEN];
+                        char value[MAX_PARAM_LEN];
+                        strncpy(name, token, eq - token);
+                        name[eq - token] = '\0';
+                        strncpy(value, eq + 1, MAX_PARAM_LEN - 1);
+                        value[MAX_PARAM_LEN - 1] = '\0';
+                        
+                        url_decode(name);
+                        url_decode(value);
+                        
+                        strncpy(param_names[param_count], name, MAX_PARAM_LEN - 1);
+                        strncpy(param_values[param_count], value, MAX_PARAM_LEN - 1);
                         param_count++;
                     }
                     token = strtok(NULL, "&");
                 }
+                free(post_copy);
                 free(post_data);
             }
         }
