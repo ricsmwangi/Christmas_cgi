@@ -58,7 +58,8 @@ function executeCGI(scriptName, queryString = '', postData = '', isPost = false,
 
 app.get('/', async (req, res) => {
     try {
-        const output = await executeCGI('main.cgi', '');
+        const queryString = new URLSearchParams(req.query).toString();
+        const output = await executeCGI('main.cgi', queryString);
         const parts = output.split('\n\n');
         const body = parts.length > 1 ? parts.slice(1).join('\n\n') : output;
         res.set('Content-Type', 'text/html').send(body);
@@ -70,7 +71,8 @@ app.get('/', async (req, res) => {
 
 app.get('/index.html', async (req, res) => {
     try {
-        const output = await executeCGI('main.cgi', '');
+        const queryString = new URLSearchParams(req.query).toString();
+        const output = await executeCGI('main.cgi', queryString);
         const parts = output.split('\n\n');
         const body = parts.length > 1 ? parts.slice(1).join('\n\n') : output;
         res.set('Content-Type', 'text/html').send(body);
