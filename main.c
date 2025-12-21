@@ -190,14 +190,18 @@ void show_card_section() {
         
         printf("<script>\n");
         printf("function shareCardURL() {\n");
-        printf("    const recipient = '%s';\n", recipient);
-        printf("    const message = '%s';\n", message);
-        printf("    const theme = '%s';\n", theme ? theme : "traditional");
-        printf("    const cardURL = window.location.origin + '/?action=card&recipient=' + encodeURIComponent(recipient) + '&message=' + encodeURIComponent(message) + '&theme=' + encodeURIComponent(theme);\n");
+        printf("    const cardData = {\n");
+        printf("        action: 'card',\n");
+        printf("        recipient: '%s',\n", recipient);
+        printf("        message: '%s',\n", message);
+        printf("        theme: '%s'\n", theme ? theme : "traditional");
+        printf("    };\n");
+        printf("    const params = new URLSearchParams(cardData);\n");
+        printf("    const cardURL = window.location.origin + '/?' + params.toString();\n");
         printf("    navigator.clipboard.writeText(cardURL).then(() => {\n");
-        printf("        alert('🔗 Card link copied to clipboard!\\n\\nShare this link so others can see your card!');\n");
+        printf("        alert('✅ Card link copied!\\n\\nShare with friends!');\n");
         printf("    }).catch(() => {\n");
-        printf("        alert('Card URL: ' + cardURL);\n");
+        printf("        alert('Link: ' + cardURL);\n");
         printf("    });\n");
         printf("}\n");
         printf("</script>\n");
