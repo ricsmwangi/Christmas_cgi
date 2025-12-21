@@ -294,7 +294,7 @@ void html_holiday_card(const char *recipient, const char *message, const char *t
 
 void html_countdown_timer(void) {
     printf("<div class='countdown'>\n");
-    printf("<div id='countdown-display' style='font-size: 24px; text-align: center; margin: 20px 0;'></div>\n");
+    printf("<div id='countdown-display' style='font-size: 28px; text-align: center; margin: 30px 0; font-weight: bold; color: #ff0000; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px; word-wrap: break-word;'>Calculating...</div>\n");
     printf("<script>\n");
     printf("function updateCountdown() {\n");
     printf("    const now = new Date();\n");
@@ -305,8 +305,9 @@ void html_countdown_timer(void) {
     printf("    const hours = Math.floor((diff %% (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));\n");
     printf("    const minutes = Math.floor((diff %% (1000 * 60 * 60)) / (1000 * 60));\n");
     printf("    const seconds = Math.floor((diff %% (1000 * 60)) / 1000);\n");
-    printf("    document.getElementById('countdown-display').innerHTML = \n");
-    printf("        days + ' days, ' + hours + ' hours, ' + minutes + ' minutes, ' + seconds + ' seconds until Christmas!';\n");
+    printf("    const display = days + 'd ' + hours + 'h ' + minutes + 'm ' + seconds + 's';\n");
+    printf("    const elem = document.getElementById('countdown-display');\n");
+    printf("    if (elem) elem.innerHTML = display;\n");
     printf("}\n");
     printf("updateCountdown();\n");
     printf("setInterval(updateCountdown, 1000);\n");
