@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>🎄 Santa's Christmas Mini Market</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin: 0; padding: 20px; min-height: 100vh; }
+        .container { max-width: 800px; margin: 0 auto; background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+        h1 { text-align: center; color: #ffd700; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        form { margin: 20px 0; }
+        input, textarea, select { width: 100%; padding: 10px; margin: 10px 0; border: none; border-radius: 5px; background: rgba(255,255,255,0.9); color: #333; }
+        button { background: #ff6b6b; color: white; padding: 12px 30px; border: none; border-radius: 25px; cursor: pointer; font-size: 16px; transition: all 0.3s; }
+        button:hover { background: #ff5252; transform: translateY(-2px); }
+        pre { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 10px; overflow-x: auto; }
+        .christmas-tree { text-align: center; font-family: monospace; color: #228b22; }
+        .error { color: #ff6b6b; text-align: center; }
+        .success { color: #4ecdc4; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class='container'>
+<h1>🎄 Santa's Christmas Mini Market</h1>
+<p>Welcome to your one-stop shop for holiday fun! Choose what you'd like to create:</p>
+<div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 30px 0;'>
+<div style='background: linear-gradient(135deg, #228b22, #32cd32); color: white; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: all 0.3s ease; cursor: pointer;' onmouseover='this.style.transform="translateY(-5px)"; this.style.boxShadow="0 8px 25px rgba(0,0,0,0.3)"' onmouseout='this.style.transform="translateY(0)"; this.style.boxShadow="0 4px 15px rgba(0,0,0,0.2)"'>
+<h2>🎄 Christmas Tree</h2>
+<p>Generate beautiful ASCII Christmas trees with custom ornaments and colors!</p>
+<a href='?action=tree' style='background: #ffd700; color: #228b22; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 10px; transition: all 0.3s ease;' onmouseover='this.style.background="#ffed4e"' onmouseout='this.style.background="#ffd700"'>Create Tree</a>
+</div>
+<div style='background: linear-gradient(135deg, #ff69b4, #ffb6c1); color: white; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: all 0.3s ease; cursor: pointer;' onmouseover='this.style.transform="translateY(-5px)"; this.style.boxShadow="0 8px 25px rgba(0,0,0,0.3)"' onmouseout='this.style.transform="translateY(0)"; this.style.boxShadow="0 4px 15px rgba(0,0,0,0.2)"'>
+<h2>🎅 Holiday Card</h2>
+<p>Create personalized holiday cards for friends and family!</p>
+<a href='?action=card' style='background: #ffd700; color: #ff69b4; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 10px; transition: all 0.3s ease;' onmouseover='this.style.background="#ffed4e"' onmouseout='this.style.background="#ffd700"'>Create Card</a>
+</div>
+<div style='background: linear-gradient(135deg, #ff4500, #ff6347); color: white; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: all 0.3s ease; cursor: pointer;' onmouseover='this.style.transform="translateY(-5px)"; this.style.boxShadow="0 8px 25px rgba(0,0,0,0.3)"' onmouseout='this.style.transform="translateY(0)"; this.style.boxShadow="0 4px 15px rgba(0,0,0,0.2)"'>
+<h2>🎁 Secret Santa</h2>
+<p>Generate random gift assignments for your holiday party!</p>
+<a href='?action=santa' style='background: #ffd700; color: #ff4500; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 10px; transition: all 0.3s ease;' onmouseover='this.style.background="#ffed4e"' onmouseout='this.style.background="#ffd700"'>Start Santa</a>
+</div>
+<div style='background: linear-gradient(135deg, #4169e1, #6495ed); color: white; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: all 0.3s ease; cursor: pointer;' onmouseover='this.style.transform="translateY(-5px)"; this.style.boxShadow="0 8px 25px rgba(0,0,0,0.3)"' onmouseout='this.style.transform="translateY(0)"; this.style.boxShadow="0 4px 15px rgba(0,0,0,0.2)"'>
+<h2>⏰ Christmas Countdown</h2>
+<p>Live countdown to Christmas Day with festive animations!</p>
+<a href='?action=countdown' style='background: #ffd700; color: #4169e1; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 10px; transition: all 0.3s ease;' onmouseover='this.style.background="#ffed4e"' onmouseout='this.style.background="#ffd700"'>View Countdown</a>
+</div>
+</div>
+<div style='text-align: center; margin-top: 40px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px;'>
+<p style='margin: 0; color: #ffd700;'>🎄 Built with pure C and CGI - No frameworks required! 🎅</p>
+<p style='margin: 5px 0; font-size: 14px;'>Choose your holiday activity above</p>
+<div style='margin-top: 15px;'>
+<a href='https://github.com/ricsmwangi/learning-progress' style='background: #ffd700; color: #228b22; padding: 8px 16px; border-radius: 20px; text-decoration: none; font-size: 12px; margin-right: 10px;'>📚 View Source</a>
+<a href='?action=about' style='background: #ff6b6b; color: white; padding: 8px 16px; border-radius: 20px; text-decoration: none; font-size: 12px;'>ℹ️ About</a>
+</div>
+</div>
+    </div>
+    <script>
+        // Add some festive JavaScript
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add snow effect or other animations here
+            console.log('🎄 Merry Christmas from CGI!');
+            
+            // Add snowfall effect
+            const snowContainer = document.createElement('div');
+            snowContainer.style.position = 'fixed';
+            snowContainer.style.top = '0';
+            snowContainer.style.left = '0';
+            snowContainer.style.width = '100%';
+            snowContainer.style.height = '100%';
+            snowContainer.style.pointerEvents = 'none';
+            snowContainer.style.zIndex = '9999';
+            document.body.appendChild(snowContainer);
+            
+            // Create snowflakes
+            for (let i = 0; i < 50; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.innerHTML = '❄';
+                snowflake.style.position = 'absolute';
+                snowflake.style.color = 'white';
+                snowflake.style.fontSize = Math.random() * 20 + 10 + 'px';
+                snowflake.style.left = Math.random() * 100 + '%';
+                snowflake.style.animation = 'fall ' + (Math.random() * 3 + 2) + 's linear infinite';
+                snowflake.style.animationDelay = Math.random() * 2 + 's';
+                snowContainer.appendChild(snowflake);
+            }
+            
+            // Add keyframes for falling animation
+            const style = document.createElement('style');
+            style.textContent = '@keyframes fall { to { transform: translateY(100vh); } }';
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>
