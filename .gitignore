@@ -1,12 +1,17 @@
 # Build artifacts
 *.o
-*.cgi
 *.a
 *.so
-
-# Logs
 access.log
 *.log
+
+# Executables
+*.cgi
+main
+tree
+card
+santa
+countdown
 
 # OS files
 .DS_Store
