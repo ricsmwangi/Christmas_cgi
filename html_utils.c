@@ -299,6 +299,8 @@ void html_countdown_timer(void) {
     printf("</div>\n");
     printf("<script>\n");
     printf("function updateCountdown() {\n");
+    printf("    const elem = document.getElementById('countdown-display');\n");
+    printf("    if (!elem) return;\n");
     printf("    const now = new Date();\n");
     printf("    const christmas = new Date(now.getFullYear(), 11, 25);\n");
     printf("    if (now > christmas) christmas.setFullYear(now.getFullYear() + 1);\n");
@@ -308,11 +310,17 @@ void html_countdown_timer(void) {
     printf("    const minutes = Math.floor((diff %% (1000 * 60 * 60)) / (1000 * 60));\n");
     printf("    const seconds = Math.floor((diff %% (1000 * 60)) / 1000);\n");
     printf("    const display = days + 'd ' + hours + 'h ' + minutes + 'm ' + seconds + 's';\n");
-    printf("    const elem = document.getElementById('countdown-display');\n");
-    printf("    if (elem) elem.textContent = display;\n");
+    printf("    elem.textContent = display;\n");
     printf("}\n");
-    printf("updateCountdown();\n");
-    printf("setInterval(updateCountdown, 1000);\n");
+    printf("function initCountdown() {\n");
+    printf("    if (document.getElementById('countdown-display')) {\n");
+    printf("        updateCountdown();\n");
+    printf("        setInterval(updateCountdown, 1000);\n");
+    printf("    } else {\n");
+    printf("        setTimeout(initCountdown, 50);\n");
+    printf("    }\n");
+    printf("}\n");
+    printf("initCountdown();\n");
     printf("</script>\n");
 }
 
