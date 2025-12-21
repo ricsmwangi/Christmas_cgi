@@ -32,6 +32,7 @@ void html_header(const char *title, const char *css) {
         printf("        .nav-back { background: #ffd700; color: #333; padding: 10px 20px; border-radius: 25px; text-decoration: none; display: inline-block; margin: 5px; }\n");
         printf("        .nav-back:hover { background: #ffed4e; }\n");
         printf("        .holiday-card { background: rgba(255,255,255,0.15); padding: 20px; border-radius: 10px; border: 2px solid #ffd700; }\n");
+        printf("        @keyframes point { 0%%, 100%% { transform: scaleX(1); } 50%% { transform: scaleX(1.1); } }\n");
         printf("    </style>\n");
     }
     printf("</head>\n");
@@ -242,32 +243,30 @@ void html_submit_button(const char *text) {
 void html_christmas_tree(int height, const char *ornaments, const char *color) {
     printf("<div class='christmas-tree'>\n");
     printf("<h2>🎄 Your Christmas Tree</h2>\n");
-    printf("<div style='color: %s; font-family: monospace; letter-spacing: 2px; line-height: 1.2; text-align: center; font-weight: bold; font-size: 20px;'>\n", color ? color : "#228b22");
+    printf("<div style='color: %s; font-family: monospace; line-height: 1.5; font-weight: bold; font-size: 20px;'>\n", color ? color : "#228b22");
 
-    // Generate tree
+    // Generate tree with flexbox for perfect centering
     for(int i = 1; i <= height; i++) {
-        printf("<div>");
-        // Add spaces for centering
-        for(int spaces = 0; spaces < height - i; spaces++) printf("&nbsp;");
+        printf("<div style='display: flex; justify-content: center; gap: 2px;'>\n");
         // Add ornaments
         for(int stars = 0; stars < 2 * i - 1; stars++) {
             if (ornaments && strlen(ornaments) > 0) {
                 char c = ornaments[stars % strlen(ornaments)];
-                if (c == '*') printf("★");
-                else if (c == '!') printf("✨");
-                else printf("%c", c);
+                if (c == '*') printf("<span>★</span>");
+                else if (c == '!') printf("<span>✨</span>");
+                else printf("<span>%c</span>", c);
             } else {
-                printf("★");
+                printf("<span>★</span>");
             }
         }
         printf("</div>\n");
     }
 
-    // Tree trunk
+    // Tree trunk with flexbox
     for(int i = 0; i < 3; i++) {
-        printf("<div>");
-        for(int spaces = 0; spaces < height - 1; spaces++) printf("&nbsp;");
-        printf("║&nbsp;║&nbsp;║</div>\n");
+        printf("<div style='display: flex; justify-content: center; gap: 2px;'>\n");
+        printf("<span>║</span><span>&nbsp;</span><span>║</span><span>&nbsp;</span><span>║</span>\n");
+        printf("</div>\n");
     }
 
     printf("</div>\n");
@@ -278,9 +277,20 @@ void html_holiday_card(const char *recipient, const char *message, const char *t
     (void)theme; // Suppress unused parameter warning
     printf("<div class='holiday-card'>\n");
     printf("<h2>🎄 Happy Holidays, %s!</h2>\n", recipient);
-    printf("<div style='background: rgba(255,255,255,0.9); color: #333; padding: 20px; border-radius: 10px; margin: 20px 0;'>\n");
-    printf("<p style='font-size: 18px; font-style: italic;'>%s</p>\n", message);
-    printf("<p style='text-align: right; color: #8b0000; margin-top: 20px;'>From Santa 🎅</p>\n");
+    printf("<div style='display: flex; align-items: center; gap: 20px; margin: 20px 0;'>\n");
+    
+    // Cartoon Santa pointing at message
+    printf("<div style='font-size: 60px; text-align: center; flex-shrink: 0;'>\n");
+    printf("    <div style='animation: point 2s infinite;'>☜</div>\n");
+    printf("    <div style='font-size: 40px; margin-top: -10px;'>🎅</div>\n");
+    printf("</div>\n");
+    
+    // Message box
+    printf("<div style='background: rgba(255,255,255,0.9); color: #333; padding: 20px; border-radius: 10px; flex-grow: 1;'>\n");
+    printf("<p style='font-size: 18px; font-style: italic; margin: 0;'>%s</p>\n", message);
+    printf("<p style='text-align: right; color: #8b0000; margin-top: 15px; margin-bottom: 0;'>From Santa 🎅</p>\n");
+    printf("</div>\n");
+    
     printf("</div>\n");
     printf("</div>\n");
 }

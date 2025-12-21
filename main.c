@@ -189,15 +189,19 @@ void show_card_section() {
         printf("</div>\n");
         
         printf("<script>\n");
+        printf("function escapeQuotes(str) {\n");
+        printf("    return (str || '').replace(/\\\\/g, '\\\\\\\\').replace(/'/g, \"\\\\'\").replace(/\\\"/g, '\\\\\\\"');\n");
+        printf("}\n\n");
         printf("function shareCardURL() {\n");
         printf("    const cardData = {\n");
         printf("        action: 'card',\n");
-        printf("        recipient: '%s',\n", recipient);
-        printf("        message: '%s',\n", message);
-        printf("        theme: '%s'\n", theme ? theme : "traditional");
+        printf("        recipient: escapeQuotes('%s'),\n", recipient);
+        printf("        message: escapeQuotes('%s'),\n", message);
+        printf("        theme: escapeQuotes('%s')\n", theme ? theme : "traditional");
         printf("    };\n");
         printf("    const params = new URLSearchParams(cardData);\n");
         printf("    const cardURL = window.location.origin + '/?' + params.toString();\n");
+        printf("    console.log('Generated URL:', cardURL);\n");
         printf("    navigator.clipboard.writeText(cardURL).then(() => {\n");
         printf("        alert('✅ Card link copied!\\n\\nShare with friends!');\n");
         printf("    }).catch(() => {\n");
