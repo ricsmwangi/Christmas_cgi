@@ -35,7 +35,6 @@ int main() {
     printf("    ***********\n");
     printf("   *************\n");
     printf("  ***************\n");
-    printf(" ***************\n");
     printf("        |||\n");
     printf("        |||\n");
     printf("</pre>\n");

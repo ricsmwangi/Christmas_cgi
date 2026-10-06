@@ -29,6 +29,9 @@ void html_christmas_tree(int height, const char *ornaments, const char *color);
 void html_holiday_card(const char *recipient, const char *message, const char *theme);
 void html_countdown_timer(void);
 
+// Validate a CSS color string (#rgb / #rrggbb) to prevent injection
+int is_safe_color(const char *c);
+
 // Generate error pages
 void html_error_page(int status_code, const char *message);
 

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 #include "cgi_utils.h"
 #include "html_utils.h"
 
@@ -12,7 +13,6 @@ int main() {
     cgi_init();
 
     // Get form data
-    char *submit = cgi_get_param("submit");
     char *participants_str = cgi_get_param("participants");
 
     html_header("🎅 Secret Santa Randomizer", NULL);
@@ -24,7 +24,8 @@ int main() {
         char *participants[MAX_PARTICIPANTS];
         int count = 0;
 
-        char *token = strtok(strdup(participants_str), ",");
+        char *copy = strdup(participants_str);
+        char *token = strtok(copy, ",");
         while (token && count < MAX_PARTICIPANTS) {
             // Trim whitespace
             while (*token == ' ') token++;
@@ -36,10 +37,11 @@ int main() {
             }
             token = strtok(NULL, ",");
         }
+        free(copy);
 
         if (count >= 2) {
             // Implement Secret Santa assignment logic
-            srand(time(NULL)); // Seed random number generator
+            srand((unsigned int)time(NULL) ^ (unsigned int)getpid()); // Seed random number generator
             
             // Create assignment array
             int assignments[MAX_PARTICIPANTS];
@@ -112,8 +114,11 @@ int main() {
                 printf("<div style='background: rgba(255,255,255,0.9); color: #333; padding: 20px; border-radius: 10px; margin: 20px 0;'>\n");
                 
                 for (int i = 0; i < count; i++) {
-                    printf("<p><strong>%s</strong> → buys for <strong>%s</strong></p>\n", 
-                           participants[i], participants[assignments[i]]);
+                    char safe_a[128], safe_b[128];
+                    html_escape(participants[i], safe_a, sizeof(safe_a));
+                    html_escape(participants[assignments[i]], safe_b, sizeof(safe_b));
+                    printf("<p><strong>%s</strong> → buys for <strong>%s</strong></p>\n",
+                           safe_a, safe_b);
                 }
                 
                 printf("</div>\n");

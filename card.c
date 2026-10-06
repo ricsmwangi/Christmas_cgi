@@ -9,7 +9,6 @@ int main() {
     cgi_init();
 
     // Check if form was submitted
-    char *submit = cgi_get_param("submit");
     char *recipient = cgi_get_param("recipient");
     char *message = cgi_get_param("message");
     char *theme = cgi_get_param("theme");
