@@ -6,6 +6,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.urlencoded({ extended: true, limit: '256kb' }));
+// Photo Studio saves whole canvas PNGs as JSON — give that route a bigger body limit.
+// Must be registered before the global express.json() below so it wins the parse.
+app.use('/api/pictures', express.json({ limit: '30mb' }));
 app.use(express.json({ limit: '256kb' }));
 
 // Basic security headers
@@ -157,6 +160,96 @@ app.post('/api/phrases', (req, res) => {
     queueTranslate(text);
   }
   res.json({ ok: true, phrase: entry });
+});
+
+// --- Picture gallery: SQLite index + the image files themselves kept on this host ---
+// DB:  ./data/christmas.db   (one row per saved picture)
+// Pics: ./pictures/<name>.png (the actual image files — you keep these on your disk)
+const crypto = require('crypto');
+const { DatabaseSync } = require('node:sqlite');
+
+const DATA_DIR = path.join(__dirname, 'data');
+const PICTURES_DIR = path.join(__dirname, 'pictures');
+const DB_FILE = path.join(DATA_DIR, 'christmas.db');
+const MAX_PICTURE_BYTES = 24 * 1024 * 1024; // decoded image size cap
+const EXT_BY_MIME = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' };
+
+fs.mkdirSync(DATA_DIR, { recursive: true });
+fs.mkdirSync(PICTURES_DIR, { recursive: true });
+
+const db = new DatabaseSync(DB_FILE);
+db.exec(`
+  CREATE TABLE IF NOT EXISTS pictures (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    file       TEXT    NOT NULL UNIQUE,
+    caption    TEXT    NOT NULL DEFAULT '',
+    mime       TEXT    NOT NULL DEFAULT 'image/png',
+    bytes      INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+  )
+`);
+
+const PICTURE_COLS = 'id, file, caption, mime, bytes, created_at';
+const pictureById = db.prepare(`SELECT ${PICTURE_COLS} FROM pictures WHERE id = ?`);
+
+function pictureRow(id) {
+  const row = pictureById.get(id);
+  return row ? { ...row, url: `/pictures/${row.file}` } : null;
+}
+
+// Serve the image files (mounted before the CGI catch-all)
+app.use('/pictures', express.static(PICTURES_DIR, { index: false, fallthrough: false, maxAge: '1d' }));
+
+app.get('/api/pictures', (req, res) => {
+  try {
+    const rows = db.prepare(`SELECT ${PICTURE_COLS} FROM pictures ORDER BY id DESC`).all();
+    res.json({ pictures: rows.map(r => ({ ...r, url: `/pictures/${r.file}` })) });
+  } catch (e) {
+    console.error('picture list failed:', e.message);
+    res.status(500).json({ ok: false, error: 'could not read the picture database' });
+  }
+});
+
+app.post('/api/pictures', (req, res) => {
+  try {
+    const body = req.body || {};
+    const m = /^data:image\/(png|jpe?g|webp);base64,([A-Za-z0-9+/=\r\n]+)$/.exec(String(body.data || ''));
+    if (!m) return res.status(400).json({ ok: false, error: 'expected a base64 data URL (png/jpeg/webp)' });
+
+    const mime = m[1] === 'jpg' ? 'image/jpeg' : `image/${m[1]}`;
+    const buf = Buffer.from(m[2], 'base64');
+    if (!buf.length) return res.status(400).json({ ok: false, error: 'empty image' });
+    if (buf.length > MAX_PICTURE_BYTES) {
+      return res.status(413).json({ ok: false, error: 'image too large (max 24MB)' });
+    }
+
+    const caption = String(body.caption || '').replace(/[\x00-\x1f\x7f]/g, ' ').trim().slice(0, 120);
+    const file = `${Date.now()}-${crypto.randomBytes(5).toString('hex')}.${EXT_BY_MIME[mime]}`;
+    fs.writeFileSync(path.join(PICTURES_DIR, file), buf);
+
+    const info = db.prepare('INSERT INTO pictures (file, caption, mime, bytes) VALUES (?, ?, ?, ?)')
+      .run(file, caption, mime, buf.length);
+    res.json({ ok: true, picture: pictureRow(Number(info.lastInsertRowid)) });
+  } catch (e) {
+    console.error('picture save failed:', e.message);
+    res.status(500).json({ ok: false, error: 'could not save the picture' });
+  }
+});
+
+app.delete('/api/pictures/:id', (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) return res.status(400).json({ ok: false, error: 'bad id' });
+    const row = pictureById.get(id);
+    if (!row) return res.status(404).json({ ok: false, error: 'no such picture' });
+
+    db.prepare('DELETE FROM pictures WHERE id = ?').run(id);
+    fs.unlink(path.join(PICTURES_DIR, path.basename(row.file)), () => {});
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('picture delete failed:', e.message);
+    res.status(500).json({ ok: false, error: 'could not delete the picture' });
+  }
 });
 
 async function handle(req, res) {

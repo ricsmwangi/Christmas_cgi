@@ -10,10 +10,10 @@
 - Generates Christmas trees, holiday cards, secret Santa assignments, countdown timers
 - Built entirely in C (compiled to CGI programs)
 - Runs on Node.js Express server
-- Deployed on Render.com
+- Self-hosted with PM2, shared over a Tailscale funnel
 
 **Try it:**
-1. Visit your Render app URL
+1. Visit the app (locally at `http://localhost:3000`, or the funnel URL)
 2. Click "Create Tree" - generate custom ASCII trees
 3. Click "Create Card" - make personalized holiday cards
 4. Copy and share!
@@ -229,14 +229,13 @@ npm start
 # Visit browser: http://localhost:3000
 ```
 
-### Deploying to Render
+### Deploying (self-hosted)
 
 ```
-1. Push code to GitHub
-2. Connect repo to Render.com
-3. Render runs: npm install && make
-4. Render runs: npm start
-5. App is live!
+1. make                              ← rebuild the C CGI binaries
+2. pm2 restart christmas-mini-market ← if server.js changed
+3. tailscale funnel ...              ← republish the URL if needed
+4. App is live!
 ```
 
 ---
@@ -299,7 +298,7 @@ npm start
 2. **Change ornaments** - Edit tree symbols
 3. **Add new theme** - Create new card style
 4. **Create new feature** - Add a new .c file
-5. **Deploy changes** - Push to GitHub, watch Render redeploy
+5. **Ship changes** - `make`, `pm2 restart christmas-mini-market` if `server.js` changed
 
 ---
 
@@ -307,7 +306,8 @@ npm start
 
 - ✅ All features implemented
 - ✅ All bugs fixed
-- ✅ Deployed on Render.com
+- ✅ Running self-hosted (PM2 + Tailscale funnel)
+- ✅ Picture gallery backed by SQLite (`data/christmas.db` + `pictures/`)
 - ✅ Ready to share with friends!
 
 **Latest commits:**

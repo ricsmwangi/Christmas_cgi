@@ -1,251 +1,181 @@
-# 🎄 Christmas App - Deployment & Security Info
+# 🎄 Christmas App - Ops, Security & Customization Info
+
+Self-hosted on this machine: **PM2** runs the Express wrapper on port **8090**, and a
+**Tailscale funnel** publishes it at `https://greenstone.tail2857a5.ts.net/christmas`.
 
 ---
 
-## ⏱️ Render Deployment Timeline
+## 🖥️ Running It
 
-### Expected Rendering Days:
-**2-3 days** for first deployment  
-**24-48 hours** for future deployments
+```bash
+make                              # rebuild the C CGI binaries
+pm2 start ecosystem.config.js     # start (app: christmas-mini-market)
+pm2 restart christmas-mini-market # after changing server.js
+pm2 logs christmas-mini-market    # watch it
+pm2 save                          # remember the process list across reboots
+```
 
-### Why the wait?
-- Render's free tier builds can be slow
-- Docker image needs to compile all C programs
-- npm packages need to install
-- First deployment takes longer than updates
+The C binaries are executed fresh on every request, so `make` alone is enough after
+editing any `.c` file. Only changes to `server.js` need a `pm2 restart`.
 
-### Current Status:
-✅ **Already Deployed!** Your app is LIVE on Render.com
-- First deployment: ✅ Complete
-- Latest update (ffadd57): ✅ Automatic redeploy in progress
-- You should see changes within 30 minutes to 2 hours
+### Tailscale funnel
 
-### How to Monitor:
-1. Go to your Render dashboard: https://dashboard.render.com
-2. Select your service (Christmas app)
-3. Check "Deployments" tab
-4. See the build status and logs
+```bash
+tailscale funnel --yes --bg --set-path /christmas http://127.0.0.1:8090
+```
+
+### Environment variables (`ecosystem.config.js`)
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `PORT` | `8090` | Port the Express server listens on |
+| `TRANSLATE_URL` | `http://127.0.0.1:8087` | Local translate-llamacpp server |
+| `TRANSLATE_MODEL` | `translategemma:4b` | Model used for World Messages translations |
+
+---
+
+## 🖼 Picture Storage
+
+| What | Where |
+|------|-------|
+| SQLite index | `data/christmas.db` |
+| Image files | `pictures/*.png` |
+| World messages cache | `phrases.json` |
+
+All three are git-ignored — nothing user-generated goes into the repo.
+
+```bash
+# Back everything up
+tar czf christmas-data.tar.gz data pictures phrases.json
+
+# Inspect the picture DB
+sqlite3 data/christmas.db 'SELECT id, caption, bytes, created_at FROM pictures ORDER BY id DESC;'
+
+# Empty the gallery (optional)
+sqlite3 data/christmas.db 'DELETE FROM pictures;'
+rm -f pictures/*
+```
+
+Deleting from the gallery page removes both the row and the file, so the two never
+disagree.
 
 ---
 
 ## 🔒 Security Check
 
 ### What's Secure ✅
-- **No SQL Injection** - Uses pure C string handling (no database)
-- **No Authentication** - Doesn't store personal data
-- **No Payment Info** - No credit cards, no transactions
-- **HTTPs by default** - Render provides free SSL/TLS
-- **Read-only Render fs** - Can't write malicious files
-- **No admin panel** - No login credentials to hack
-- **Character escaping** - Special characters properly escaped
-- **No file uploads** - Can't upload malware
-- **No API keys exposed** - No sensitive credentials in code
+- **No SQL injection** — the only SQL uses bound parameters (`?`), never string building
+- **No authentication / personal data** — nothing to leak except the pictures you save
+- **No payment info** — no cards, no transactions
+- **HTML escaping** — user text is escaped before it hits the page (prevents XSS)
+- **Gallery captions are rendered with `textContent`**, never as raw HTML
+- **Uploads are validated** — only png/jpeg/webp data URLs, 24MB cap, random filenames,
+  no path traversal (delete uses `path.basename`)
+- **Body limits** — 256KB for normal requests, 30MB only on the picture save route
+- **No third-party scripts** — everything is served from this box
+- **All code in GitHub** (transparent & auditable)
 
 ### Security Features:
-✅ CGI protocol (standard web safety)  
-✅ Environment variables (parameters not in memory)  
-✅ HTML escaping (prevents XSS)  
-✅ URL encoding (prevents injection)  
-✅ No third-party scripts (except Render's)  
-✅ All code in GitHub (transparent & auditable)
+✅ CGI protocol (standard web safety)
+✅ Environment variables (parameters not in memory)
+✅ HTML escaping (prevents XSS)
+✅ URL encoding (prevents injection)
+✅ Security headers (`nosniff`, `SAMEORIGIN`, `Referrer-Policy`)
 
 ### Minor Security Notes:
-⚠️ URLs are public (anyone can see card data) - intentional by design  
-⚠️ No rate limiting (Render provides this for free tier)  
-⚠️ No user authentication (not needed for this app)
+⚠️ Anyone with the funnel URL can view and save pictures — the tailnet path is the only gate
+⚠️ No rate limiting — add one in `server.js` if you expose it more widely
+⚠️ No user authentication — not needed for a friends-and-family Christmas page
+⚠️ If you publish beyond your tailnet, put auth in front of it (reverse proxy or Tailscale ACL)
 
 ---
 
 ## 👤 Where to Add Your Signature
 
-You have several options:
-
 ### Option 1: Footer Signature (Recommended)
-**File:** `html_utils.c`  
-**Location:** Lines 43-50
+**File:** `html_utils.c`, function `html_footer` (~line 141)
 
-Current:
 ```c
-printf("        <p style='color: #ffd700; font-size: 14px; line-height: 1.6;'>\n");
-printf("            🎄 Hey guys, so this festive season you can enjoy something I made for everyone! 🎄<br>\n");
-printf("            A little holiday magic ✨<br>\n");
-printf("            © 2025 Santa's Mini Market - Spreading Holiday Cheer! 🎅\n");
+printf("        <p>🎄 A little holiday magic ✨ · © 2025 Santa's Mini Market<br>\n");
+printf("        <strong style='color: var(--pink);'>Made with ❤️ by #rkb!</strong></p>\n");
 ```
 
-**Change to:**
-```c
-printf("        <p style='color: #ffd700; font-size: 14px; line-height: 1.6;'>\n");
-printf("            🎄 Hey guys, so this festive season you can enjoy something I made for everyone! 🎄<br>\n");
-printf("            A little holiday magic ✨<br>\n");
-printf("            © 2025 Santa's Mini Market - Spreading Holiday Cheer! 🎅<br>\n");
-printf("            <strong>Made with ❤️ by [YOUR NAME]</strong>\n");
-```
-
-### Option 2: About Page
-Add a new "About" section showing your bio:
-
-Go to line 479 in `main.c` (show_about_section function)
-
-Add your info there!
-
-### Option 3: Dashboard Header
-Add your name/signature to the main dashboard at the top
-
-**File:** `main.c`  
-**Location:** Line 29 (after the heading)
+### Option 2: Dashboard Header
+**File:** `main.c`, in `main()` right after the hero block (~line 35)
 
 ```c
-printf("<h1>🎄 Santa's Christmas Mini Market</h1>\n");
 printf("<p style='text-align: center; color: #ffd700; font-size: 14px;'>Created by: <strong>[YOUR NAME]</strong></p>\n");
-printf("<p>Welcome to your one-stop shop for holiday fun! Choose what you'd like to create:</p>\n");
 ```
 
-### Option 4: README.md Signature
-**File:** `README.md`  
-**Location:** Bottom of file
+### Option 3: README.md Signature
+Add a Creator section at the bottom of `README.md`.
 
-Add:
-```markdown
----
-
-## 👨‍💻 Creator
-Made with ❤️ by **[YOUR NAME]**  
-GitHub: [@ricsmwangi](https://github.com/ricsmwangi)  
-Portfolio: [Your Portfolio URL]  
-
-**Special thanks to:** Everyone who tested and provided feedback!
+After any C change:
+```bash
+make
+pm2 restart christmas-mini-market   # only if server.js changed too
 ```
-
----
-
-## 📝 Recommended Implementation
-
-### Quick Setup (5 minutes):
-1. Add signature to footer (Option 1) - easiest
-2. Compile with `make`
-3. Push to GitHub with `git push origin main`
-4. Render auto-redeploys in 30 minutes
-
-### Full Setup (15 minutes):
-1. Add signature to footer
-2. Add about page description (Option 2)
-3. Update README.md with your details (Option 4)
-4. Compile and push
 
 ---
 
 ## 📊 Deployment Ready Checklist
 
 ✅ **Code Quality**
-- All C programs compile without errors
-- No security vulnerabilities
-- Proper error handling
+- All C programs compile without warnings (`make`)
+- Proper error handling on the picture API
 
 ✅ **Features Complete**
 - Christmas tree generator
 - Holiday card creator
 - Secret Santa tool
-- Countdown timer
-- Beautiful UI with animations
-- Mobile responsive
+- Countdown
+- Photo studio + gallery (SQLite-backed)
+- Christmas stories and World messages
+- Beautiful responsive UI with animations
 
 ✅ **Documentation**
-- Clean, readable STUDY_GUIDE.md
-- README.md with instructions
-- Code is well-commented
+- `README.md` — features, self-hosting, picture DB
+- `STUDY_GUIDE.md` — how the C/CGI parts work
+- This file — ops, security, customization
 
-✅ **Deployment**
-- Docker configured
-- Render deployment working
-- Git repository updated
-- SSL/HTTPs enabled
-
-✅ **Testing**
-- All features work on desktop
-- All features work on mobile
-- Copy functionality working
-- Countdown visible on mobile
-
----
-
-## 🚀 Sharing Instructions
-
-### Step 1: Get Your Render URL
-1. Go to https://dashboard.render.com
-2. Select your Christmas app
-3. Copy the URL (looks like: `https://christmas-app-xxxxx.onrender.com`)
-
-### Step 2: Share the Link
-Send this to your friends:
-```
-🎄 Check out my Christmas app! 🎄
-[YOUR RENDER URL]
-
-Create trees, send cards, and more!
-```
-
-### Step 3: They Can:
-- Create Christmas trees with custom ornaments
-- Make personalized holiday cards
-- Copy and send cards via WhatsApp/Email
-- Play Secret Santa game
-- See the Christmas countdown
+✅ **Hosting**
+- PM2 process with autorestart and memory cap
+- Tailscale funnel for sharing
+- Data directories git-ignored
 
 ---
 
 ## 📱 Mobile vs Desktop
 
 ### Desktop (Laptop)
-✅ All features work perfectly  
-✅ Smooth animations  
+✅ All features work perfectly
+✅ Smooth animations
 ✅ Full screen experience
 
 ### Mobile (Phone)
-✅ Responsive design  
-✅ Touch-friendly buttons  
-✅ Countdown now visible (just fixed!)  
-✅ Copy functionality works  
+✅ Responsive design
+✅ Touch-friendly buttons
+✅ Countdown visible
+✅ Copy / Share / Save-to-gallery work
 ✅ All animations smooth
 
 ---
 
-## 🔄 Update Timeline
-
-| Timeline | Action |
-|----------|--------|
-| Now | App is LIVE ✅ |
-| 30 min - 2 hours | Countdown fix deploys |
-| 1-2 days | Any future changes auto-deploy |
-| Always | GitHub keeps full history |
-
----
-
-## 💬 Next Steps
-
-### Immediate:
-1. ✅ Add your signature (choose option above)
-2. ✅ Test on your phone one more time
-3. ✅ Share the link with friends!
-
-### Future:
-1. Collect feedback from friends
-2. Make customizations as needed
-3. Add new features if desired
-4. Keep learning more C/CGI
-
----
-
-## 📞 Support
+## 🔧 Troubleshooting
 
 **If something breaks:**
-1. Check Render dashboard logs
-2. Check GitHub commits
-3. Revert last change: `git revert HEAD`
-4. Redeploy by pushing: `git push origin main`
+1. `pm2 logs christmas-mini-market` — check the logs
+2. Rebuild: `make clean && make`
+3. Restart: `pm2 restart christmas-mini-market`
+4. Revert last change: `git revert HEAD`
 
 **Common Issues:**
 - Feature not showing? → Hard refresh (Ctrl+F5 or Cmd+Shift+R)
 - Old version showing? → Clear browser cache
+- Gallery says "Could not reach the picture database"? → Check `pm2 logs`, make sure
+  `data/` and `pictures/` are writable by the user running PM2
+- 404 on `/pictures/...`? → Confirm the file exists: `ls pictures/`
+- Funnel URL dead? → `tailscale funnel ...` again, check `tailscale status`
 - Mobile looks weird? → Check zoom level (100%)
 
 ---
@@ -255,14 +185,12 @@ Create trees, send cards, and more!
 | What | Status |
 |------|--------|
 | **Code Quality** | ✅ Excellent |
-| **Security** | ✅ Safe & Secure |
+| **Security** | ✅ Safe for a private share |
 | **Performance** | ✅ Fast |
 | **Mobile Friendly** | ✅ Yes |
-| **Deployment** | ✅ Live |
-| **Ready to Share** | ✅ YES! |
+| **Hosting** | ✅ Self-hosted via PM2 + Tailscale |
+| **Picture storage** | ✅ SQLite + files on disk |
 
 ---
 
-**You're all set! Your Christmas app is ready to share with the world! 🎄✨🎅**
-
-**Time to add your signature and show your friends what you built!**
+**You're all set! Your Christmas app is running on your own machine. 🎄✨🎅**

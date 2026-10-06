@@ -15,6 +15,7 @@ void show_card_section();
 void show_santa_section();
 void show_countdown_section();
 void show_studio_section();
+void show_gallery_section();
 void show_story_section();
 void show_world_section();
 void show_about_section();
@@ -45,6 +46,8 @@ int main() {
         show_countdown_section();
     } else if (strcmp(action, "studio") == 0) {
         show_studio_section();
+    } else if (strcmp(action, "gallery") == 0) {
+        show_gallery_section();
     } else if (strcmp(action, "story") == 0) {
         show_story_section();
     } else if (strcmp(action, "world") == 0) {
@@ -83,6 +86,9 @@ void show_main_menu() {
 
     printf("<div class='tile tile-red'><div class='tile-ico'>📸</div>\n");
     printf("<h2>Photo Studio</h2>\n<a class='btn' href='?action=studio'>Open</a>\n</div>\n");
+
+    printf("<div class='tile tile-gold'><div class='tile-ico'>🖼</div>\n");
+    printf("<h2>Gallery</h2>\n<a class='btn' href='?action=gallery'>Open</a>\n</div>\n");
 
     printf("<div class='tile tile-purple'><div class='tile-ico'>📖</div>\n");
     printf("<h2>Stories</h2>\n<a class='btn' href='?action=story'>Open</a>\n</div>\n");
@@ -488,7 +494,7 @@ void show_countdown_section() {
 void show_studio_section() {
     printf("<div class='panel'>\n");
     printf("<h2>📸 Christmas Photo Studio</h2>\n");
-    printf("<p>Snap or pick a photo, make it merry, then download or share — nothing is ever uploaded.</p>\n");
+    printf("<p>Snap or pick a photo, make it merry, then download, share, or save it to the server gallery.</p>\n");
 
     printf("<div class='row'>\n");
     printf("<div><label>1. Choose a photo</label><input type='file' id='photo' accept='image/*'></div>\n");
@@ -528,6 +534,7 @@ void show_studio_section() {
     printf("<button class='btn' type='button' id='dlBtn'>⬇ Download</button>\n");
     printf("<button class='btn alt' type='button' id='shBtn'>📤 Share</button>\n");
     printf("<button class='btn' type='button' id='cpBtn'>📋 Copy</button>\n");
+    printf("<button class='btn alt' type='button' id='saveBtn'>💾 Save to Gallery</button>\n");
     printf("</div>\n");
 
     printf("<script>\n");
@@ -606,10 +613,85 @@ void show_studio_section() {
     printf("  if(!window.ClipboardItem||!navigator.clipboard||!navigator.clipboard.write){msg('Copy not supported in this browser — use Download.');return;}\n");
     printf("  navigator.clipboard.write([new ClipboardItem({'image/png':b})]).then(function(){msg('');alert('📋 Image copied to clipboard!');},function(){msg('Copy blocked by browser — use Download.');});});});\n");
 
+    /* Save the finished festive picture to the server gallery (SQLite + ./pictures) */
+    printf("var BASE=(location.pathname==='/'||location.pathname==='')?'':location.pathname.replace(/\\/$/,'');\n");
+    printf("G('saveBtn').addEventListener('click',function(){\n");
+    printf("  if(!img){msg('Pick a photo first.');return;}\n");
+    printf("  var b=this;b.disabled=true;msg('Saving to the gallery…');\n");
+    printf("  var data=cvs.toDataURL('image/png');\n");
+    printf("  fetch(BASE+'/api/pictures',{method:'POST',headers:{'Content-Type':'application/json'},\n");
+    printf("    body:JSON.stringify({caption:G('greet').value.trim(),data:data})})\n");
+    printf("    .then(function(r){return r.json();})\n");
+    printf("    .then(function(d){b.disabled=false;if(!d.ok)throw new Error(d.error||'save failed');\n");
+    printf("      msg('');location.href=BASE+'/?'+'action=gallery';})\n");
+    printf("    .catch(function(e){b.disabled=false;msg('Could not save: '+(e&&e.message||'server error'));});\n");
+    printf("});\n");
+
     printf("placeholder();\n");
     printf("})();\n");
     printf("</script>\n");
     printf("</div>\n");
+}
+
+void show_gallery_section() {
+    printf("<div class='panel'>\n");
+    printf("<h2>🖼️ Christmas Photo Gallery</h2>\n");
+    printf("<p>Every festive picture saved from the <a href='?action=studio'>Photo Studio</a> — "
+           "the image files live on this server under <code>pictures/</code> and are indexed in "
+           "<code>data/christmas.db</code>.</p>\n");
+    printf("<p id='galStatus' style='text-align:center;color:#c8d2ff;min-height:20px;'>Loading the gallery…</p>\n");
+    printf("<div id='gal' style='display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;'></div>\n");
+    printf("<p style='text-align:center;margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;'>\n");
+    printf("<a class='nav-back' href='?action=studio'>📸 Make a new picture</a>\n");
+    printf("<a class='nav-back' href='?'>← Back to Main Menu</a>\n");
+    printf("</p>\n");
+    printf("</div>\n");
+
+    printf("<script>\n");
+    printf("(function(){\n");
+    printf("var g=document.getElementById('gal'),st=document.getElementById('galStatus');\n");
+    printf("if(!g)return;\n");
+    printf("var BASE=(location.pathname==='/'||location.pathname==='')?'':location.pathname.replace(/\\/$/,'');\n");
+    printf("function card(p){\n");
+    printf("  var d=document.createElement('div');\n");
+    printf("  d.style.cssText='background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;overflow:hidden;';\n");
+    printf("  var a=document.createElement('a');\n");
+    printf("  a.href=BASE+'/pictures/'+encodeURIComponent(p.file);a.target='_blank';a.rel='noopener';\n");
+    printf("  var img=document.createElement('img');\n");
+    printf("  img.src=a.href;img.alt=p.caption||'Saved picture';img.loading='lazy';\n");
+    printf("  img.style.cssText='width:100%%;height:180px;object-fit:cover;display:block;background:#12162e;';\n");
+    printf("  a.appendChild(img);d.appendChild(a);\n");
+    printf("  var meta=document.createElement('div');meta.style.cssText='padding:10px 12px;font-size:13px;color:#c8d2ff;';\n");
+    printf("  var cap=document.createElement('div');cap.textContent=p.caption||'Untitled';\n");
+    printf("  cap.style.cssText='color:#ffd700;font-weight:600;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';\n");
+    printf("  var when=document.createElement('div');\n");
+    printf("  when.textContent=(p.created_at||'')+' · '+Math.max(1,Math.round((p.bytes||0)/1024))+' KB';\n");
+    printf("  when.style.opacity='.75';\n");
+    printf("  meta.appendChild(cap);meta.appendChild(when);d.appendChild(meta);\n");
+    printf("  var del=document.createElement('button');del.type='button';del.className='btn alt';del.textContent='🗑 Delete';\n");
+    printf("  del.style.cssText='margin:0 12px 12px;padding:6px 14px;font-size:13px;';\n");
+    printf("  del.addEventListener('click',function(){\n");
+    printf("    if(!confirm('Delete this picture from the server?'))return;\n");
+    printf("    del.disabled=true;\n");
+    printf("    fetch(BASE+'/api/pictures/'+p.id,{method:'DELETE'}).then(function(r){return r.json();})\n");
+    printf("      .then(function(){load();}).catch(function(){del.disabled=false;st.textContent='⚠ Could not delete that picture.';});\n");
+    printf("  });\n");
+    printf("  d.appendChild(del);\n");
+    printf("  return d;\n");
+    printf("}\n");
+    printf("function load(){\n");
+    printf("  fetch(BASE+'/api/pictures').then(function(r){return r.json();})\n");
+    printf("    .then(function(d){\n");
+    printf("      var list=d.pictures||[];g.innerHTML='';\n");
+    printf("      if(!list.length){st.textContent='No pictures yet — make one in the studio. 📸';return;}\n");
+    printf("      st.textContent=list.length+(list.length===1?' picture':' pictures')+' saved on this server';\n");
+    printf("      list.forEach(function(p){g.appendChild(card(p));});\n");
+    printf("    })\n");
+    printf("    .catch(function(){st.textContent='⚠ Could not reach the picture database.';});\n");
+    printf("}\n");
+    printf("load();\n");
+    printf("})();\n");
+    printf("</script>\n");
 }
 
 void show_world_section() {

@@ -58,6 +58,7 @@ static void css_block(void) {
     printf("        .tile-red { background: linear-gradient(135deg,#b3242a,#ff6b6b); }\n");
     printf("        .tile-purple { background: linear-gradient(135deg,#5b2c8f,#9b59b6); }\n");
     printf("        .tile-teal { background: linear-gradient(135deg,#0f6b6b,#2bb3a3); }\n");
+    printf("        .tile-gold { background: linear-gradient(135deg,#8a6d0f,#d4af37); }\n");
     printf("        #wmBox { max-width: 760px; margin: 18px auto; padding: 42px 26px; text-align: center;\n");
     printf("            background: linear-gradient(160deg, rgba(179,36,42,.92), rgba(15,45,84,.94));\n");
     printf("            border-radius: 18px; border: 1px solid rgba(255,255,255,.18);\n");
@@ -119,6 +120,7 @@ void html_header(const char *title, const char *css) {
     printf("        <a href='?action=santa' title='Secret Santa'>🎁</a>\n");
     printf("        <a href='?action=countdown' title='Countdown'>⏰</a>\n");
     printf("        <a href='?action=studio' title='Photo Studio'>📸</a>\n");
+    printf("        <a href='?action=gallery' title='Gallery'>🖼</a>\n");
     printf("        <a href='?action=story' title='Stories'>📖</a>\n");
     printf("        <a href='?action=world' title='World Messages'>🌍</a>\n");
     printf("        <a href='?action=about' title='About'>ℹ️</a>\n");

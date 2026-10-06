@@ -29,3 +29,7 @@ node_modules/
 
 # Runtime data (user-submitted messages)
 phrases.json
+
+# Picture gallery: SQLite index + the image files you keep on your host
+data/
+pictures/

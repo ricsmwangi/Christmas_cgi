@@ -1,13 +1,15 @@
 # 🎄 Santa's Christmas Mini Market
 
-A festive pure **C CGI web application** with four holiday activities built entirely from scratch - no frameworks, no Node.js bloat, just pure web performance.
+A festive **pure C CGI web application** with holiday activities built from scratch — no
+frameworks, no frontend build step. It runs **on my own machine** under PM2 and is shared
+over Tailscale, and it now has a **real picture database** so saved photos stay on the host.
 
 ## ✨ What You Can Do
 
 ### 🎄 **Christmas Tree Generator**
 Generate beautiful ASCII art Christmas trees with custom heights and decorations.
 
-### 💌 **Holiday Card Creator**  
+### 💌 **Holiday Card Creator**
 Design personalized Christmas cards with custom messages. **Users can share their cards via URL!**
 - Enter recipient name
 - Write your message
@@ -27,67 +29,126 @@ Live countdown timer to Christmas Day with real-time updates and festive styling
 ### 📸 **Christmas Photo Studio**
 Upload a photo (or snap one with your webcam) and give it a festive makeover —
 golden/tinsel/holly frames, snow, Santa hat, sparkles, warm & frosty filters, custom
-greeting. Download, share, or copy the result. Runs 100% in your browser, nothing is uploaded.
+greeting. Download, share, copy — or **💾 Save to Gallery**, which stores the finished
+picture on the server (file in `pictures/`, row in the SQLite DB).
+
+### 🖼 **Christmas Photo Gallery**
+Every picture saved from the studio, browsable at `?action=gallery` — with caption,
+size and date, plus a delete button that removes both the DB row and the image file.
 
 ### ❄️ **Bonus: Snowfall Animation**
 Every page includes beautiful animated snowflakes falling in the background!
 
 ---
 
-## 🌐 Deploy to Render.com (Free!)
+## 🖥️ How It Runs (self-hosted)
 
-### Quick 3-Step Setup
-
-**Step 1:** Go to [render.com](https://render.com)
-
-**Step 2:** Click **"New +"** → **"Web Service"**
-- Select this GitHub repository
-- Name it: `christmas-cgi`
-- Choose Node environment
-
-**Step 3:** Configure Build & Start
-```
-Build Command: npm install && make
-Start Command: npm start
-```
-
-Your app goes live in **2-3 minutes**! 🎅
-
-## 🖥️ Run with PM2 (this server)
+This is self-hosted, not on Render. One Node/Express process wraps the C CGI binaries and
+publishes them over Tailscale:
 
 ```bash
-make                     # build the CGI binaries
-pm2 start ecosystem.config.js   # christmas-mini-market on port 8090
+make                        # compile the CGI binaries
+npm install                 # only dependency is express
+pm2 start ecosystem.config.js   # app name: christmas-mini-market, port 8090
 pm2 save
 tailscale funnel --yes --bg --set-path /christmas http://127.0.0.1:8090
 ```
 
 Live at `https://greenstone.tail2857a5.ts.net/christmas`
 
+Useful commands:
+
+```bash
+pm2 logs christmas-mini-market   # watch it
+pm2 restart christmas-mini-market
+pm2 stop christmas-mini-market
+```
+
+### Environment variables (`ecosystem.config.js`)
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `PORT` | `8090` | Port the Express server listens on |
+| `NODE_ENV` | `production` | Node environment |
+| `TRANSLATE_URL` | `http://127.0.0.1:8087` | Local translate-llamacpp server (World Messages) |
+| `TRANSLATE_MODEL` | `translategemma:4b` | Model used for translations |
+
 ---
 
-## 💻 Run Locally
+## 🖼 Picture Database
+
+The gallery is backed by **SQLite** — no database server to install, the whole thing is two
+directories next to the code:
+
+```
+Christmas_cgi/
+├── data/christmas.db   ← SQLite index (one row per picture)
+└── pictures/*.png      ← the actual image files (you keep these on your disk)
+```
+
+Both directories are created automatically on first start and are **git-ignored** — your
+photos never end up in the repo. Back them up (or move them) with a plain copy:
+
+```bash
+tar czf christmas-pictures.tar.gz data pictures
+```
+
+### Schema
+
+```sql
+CREATE TABLE pictures (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  file       TEXT    NOT NULL UNIQUE,   -- filename inside ./pictures
+  caption    TEXT    NOT NULL DEFAULT '',
+  mime       TEXT    NOT NULL DEFAULT 'image/png',
+  bytes      INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+```
+
+Inspect it with the `sqlite3` CLI if you like:
+
+```bash
+sqlite3 data/christmas.db 'SELECT id, caption, bytes, created_at FROM pictures ORDER BY id DESC;'
+```
+
+### API
+
+| Method | Route | What it does |
+|--------|-------|--------------|
+| `POST` | `/api/pictures` | Save a picture. JSON body: `{"caption": "...", "data": "data:image/png;base64,..."}` — png/jpeg/webp, max 24MB decoded |
+| `GET` | `/api/pictures` | List saved pictures, newest first |
+| `DELETE` | `/api/pictures/:id` | Delete a row **and** its image file |
+| `GET` | `/pictures/<file>` | Serve the image file itself |
+
+Example:
+
+```bash
+curl -X POST http://127.0.0.1:8090/api/pictures \
+  -H 'Content-Type: application/json' \
+  -d '{"caption":"Merry Christmas!","data":"data:image/png;base64,iVBORw0KGgo..."}'
+```
+
+Photos are only reachable through your server (and whatever tailnet/funnel path you publish
+it under). Nothing is sent anywhere else.
+
+---
+
+## 💻 Run Locally (development)
 
 ### Requirements
-- GCC compiler (gcc)
-- Node.js 14+
-- Make
+- GCC (`gcc`) and `make`
+- **Node.js 22.5+** (the picture DB uses the built-in `node:sqlite` module — no npm DB driver)
 - Git
 
 ### Installation
 ```bash
-# Clone the repo
 git clone https://github.com/ricsmwangi/Christmas_cgi.git
 cd Christmas_cgi
 
-# Build everything
-make
-
-# Install Node dependencies
-npm install
-
-# Start the server
-npm start
+make            # build the CGI binaries
+npm install     # express
+npm start       # server on http://localhost:3000
 ```
 
 Then visit `http://localhost:3000` 🎄
@@ -100,8 +161,9 @@ Then visit `http://localhost:3000` 🎄
 2. **Server** executes the C CGI program with your input
 3. **C Code** generates HTML instantly
 4. **Browser** displays the festive result with animations
+5. **Gallery saves** go through `/api/pictures` → `data/christmas.db` + `pictures/`
 
-**No backend database. No APIs. Just pure C speed.** ⚡
+Everything except the gallery is stateless CGI. ⚡
 
 ---
 
@@ -109,17 +171,19 @@ Then visit `http://localhost:3000` 🎄
 
 ```
 Christmas_cgi/
-├── main.c              ← Main CGI app (router + menu)
+├── main.c              ← Main CGI app (router + menu, studio, gallery)
 ├── tree.c              ← Tree generator
 ├── card.c              ← Card creator
 ├── santa.c             ← Secret Santa randomizer
 ├── countdown.c         ← Countdown timer
 ├── cgi_utils.c/h       ← CGI protocol handling
 ├── html_utils.c/h      ← HTML/CSS generation
-├── server.js           ← Express wrapper
+├── server.js           ← Express wrapper + /api/pictures + SQLite
+├── ecosystem.config.js ← PM2 config (self-hosting)
 ├── Makefile            ← Build configuration
-├── package.json        ← Dependencies
-├── render.yaml         ← Render deployment config
+├── package.json        ← Dependencies (express only)
+├── data/christmas.db   ← Picture DB (created at runtime, git-ignored)
+├── pictures/           ← Saved images (created at runtime, git-ignored)
 └── README.md           ← This file
 ```
 
@@ -137,7 +201,7 @@ make clean && make
 # Test tree generator
 QUERY_STRING="action=tree&height=7" ./main.cgi | head -30
 
-# Test card creator  
+# Test card creator
 QUERY_STRING="action=card" ./main.cgi | grep "Holiday Card"
 
 # Test Secret Santa
@@ -145,6 +209,12 @@ QUERY_STRING="action=santa" ./main.cgi | grep "Secret Santa"
 
 # Test countdown
 QUERY_STRING="action=countdown" ./main.cgi | grep "Countdown"
+
+# Test the gallery page
+QUERY_STRING="action=gallery" ./main.cgi | grep "Photo Gallery"
+
+# Test the picture API (with the server running)
+curl -s http://127.0.0.1:8090/api/pictures
 ```
 
 ---
@@ -158,7 +228,7 @@ Users can:
 2. Enter recipient name
 3. Write custom message
 4. Send the generated HTML link to friends
-5. Each link is a unique festive card! 
+5. Each link is a unique festive card!
 
 **Example shared link:**
 ```
@@ -188,14 +258,14 @@ make countdown.cgi # Build countdown
 
 ## 📊 Features
 
-✅ **Pure C Backend** - No bloated frameworks  
-✅ **Fast Response Times** - CGI is lightning-fast  
-✅ **Responsive Design** - Works on phones & desktop  
-✅ **No Database** - Everything computed on-the-fly  
-✅ **Easy Deploy** - One-click Render.com deployment  
-✅ **Open Source** - MIT License, modify as you like  
-✅ **📖 Christmas Stories** - Living canvas sceneries (village, aurora, fireside, night sky) built to stare at  
-✅ **🌍 World Messages** - Festive messages looping in 14+ languages, with live LLM translation  
+✅ **Pure C Backend** - No bloated frameworks
+✅ **Fast Response Times** - CGI is lightning-fast
+✅ **Responsive Design** - Works on phones & desktop
+✅ **Self-hosted** - PM2 + Tailscale funnel, no third-party hosting
+✅ **SQLite picture database** - Saved photos live on your disk (`data/` + `pictures/`)
+✅ **Open Source** - MIT License, modify as you like
+✅ **📖 Christmas Stories** - Living canvas sceneries (village, aurora, fireside, night sky) built to stare at
+✅ **🌍 World Messages** - Festive messages looping in 14+ languages, with live LLM translation
 
 ---
 
@@ -236,6 +306,7 @@ Edit individual `.c` files to change functionality:
 - Card layouts
 - Secret Santa logic
 - Countdown styling
+- Studio effects and gallery layout (`main.c`)
 
 ---
 
@@ -243,11 +314,11 @@ Edit individual `.c` files to change functionality:
 
 Every page includes:
 ```
-🎄 Hey guys, so this festive season you can enjoy 
-something I made for everyone! 🎄
+🎄 A little holiday magic ✨ · © 2025 Santa's Mini Market
+Made with ❤️ by #rkb!
 ```
 
-This can be edited in `html_utils.c` lines 38-45.
+This can be edited in `html_utils.c` (the `html_footer` function, around line 141).
 
 ---
 
@@ -255,17 +326,8 @@ This can be edited in `html_utils.c` lines 38-45.
 
 - **Load Time:** < 100ms
 - **Memory Per Request:** ~500KB
-- **Concurrent Users:** Unlimited
-- **No Scaling Issues:** Stateless CGI design
-
----
-
-## 🎯 Next Steps
-
-1. **Fork** this repository to your GitHub
-2. **Deploy** to Render.com (connect GitHub)
-3. **Share** the live link with friends
-4. **Customize** the code and redeploy automatically
+- **Concurrent Users:** Limited by your own box, not a hosting plan
+- **Stateless CGI** for everything except the gallery DB
 
 ---
 
@@ -275,9 +337,9 @@ Built as a demonstration of:
 - **C Programming**: Systems-level web development
 - **CGI Protocols**: How websites work at the protocol level
 - **Web Standards**: HTTP, HTML, CSS, JavaScript
-- **DevOps**: GitHub → Render.com deployment pipeline
+- **Self-hosting**: PM2, SQLite and a Tailscale funnel instead of a hosting platform
 
-**No frameworks. No databases. Just pure C and the web.** 
+**No frameworks. No database server. Just pure C, SQLite and the web.**
 
 ---
 
@@ -297,7 +359,7 @@ MIT License - Feel free to use, modify, and share!
    *********
   ***********
  *************
-***************
+ ***************
       |||
       |||
   Ho Ho Ho! 🎅
